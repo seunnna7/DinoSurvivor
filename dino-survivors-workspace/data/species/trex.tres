@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SpeciesData" format=3 uid="uid://bo2p1hddxin2"]
+
+[ext_resource type="Script" uid="uid://dt78uik5ysibf" path="res://resource_types/species_data.gd" id="1"]
+[ext_resource type="Resource" uid="uid://b63nry8pllqbl" path="res://data/skills/bite.tres" id="2"]
+[ext_resource type="Script" uid="uid://drcumpt1lyw1e" path="res://resource_types/stat_modifier_data.gd" id="3"]
+
+[sub_resource type="Resource" id="StatModifier_dmg"]
+script = ExtResource("3")
+source_id = &"trex"
+stat_id = &"damage_mult"
+value = 10.0
+
+[sub_resource type="Resource" id="StatModifier_speed"]
+script = ExtResource("3")
+source_id = &"trex"
+stat_id = &"move_speed"
+value = -5.0
+
+[resource]
+script = ExtResource("1")
+id = &"trex"
+display_name = "티라노사우루스"
+passive_flavor_text = "공격력 +10%, 이동속도 -5%"
+passive_modifiers = Array[ExtResource("3")]([SubResource("StatModifier_dmg"), SubResource("StatModifier_speed")])
+unique_active = ExtResource("2")

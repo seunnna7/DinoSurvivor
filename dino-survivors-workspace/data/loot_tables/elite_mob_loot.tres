@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="LootTable" format=3 uid="uid://cyv2jc8j0ywcd"]
+
+[ext_resource type="Script" uid="uid://c1px7ms7exys6" path="res://resource_types/loot_table.gd" id="1"]
+[ext_resource type="Script" uid="uid://tlueufoht1sn" path="res://resource_types/loot_entry.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/entities/pickups/XPGem.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/entities/pickups/GoldCoin.tscn" id="4"]
+
+[sub_resource type="Resource" id="LootEntry_xp"]
+script = ExtResource("2")
+item_scene = ExtResource("3")
+min_count = 4
+max_count = 6
+
+[sub_resource type="Resource" id="LootEntry_gold"]
+script = ExtResource("2")
+item_scene = ExtResource("4")
+drop_chance = 0.8
+min_count = 2
+max_count = 4
+
+[resource]
+script = ExtResource("1")
+entries = Array[ExtResource("2")]([SubResource("LootEntry_xp"), SubResource("LootEntry_gold")])

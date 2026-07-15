@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://b63nry8pllqbl"]
+
+[ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://c3s4lcggsl7e6" path="res://scenes/skills/BiteSkill.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/BiteHitEffect.tscn" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"bite"
+display_name = "물기"
+species_motif = "티라노사우루스"
+flavor_text = "티라노사우루스의 악력은 육상 동물 역대급이었다고 합니다. 근데 그 정도면 씹는 게 아니라 흡입 아닌가요?"
+archetype = 7
+is_unique_active = true
+base_damage = 15.0
+cooldown = 0.8
+effect_scene = ExtResource("3")
+logic_scene = ExtResource("2")
+icon_color = Color(0.9, 0.85, 0.2, 1)

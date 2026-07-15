@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c3s4lcggsl7e6"]
+
+[ext_resource type="Script" uid="uid://ccsmceh2ihx64" path="res://scripts/systems/skills/bite_skill.gd" id="1"]
+
+[node name="BiteSkill" type="Node" unique_id=193102162]
+script = ExtResource("1")
