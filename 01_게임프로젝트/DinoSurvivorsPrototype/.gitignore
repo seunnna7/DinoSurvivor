@@ -1,0 +1,7 @@
+# Godot 4 관련 캐시/자동생성 파일 (버전 관리 제외 권장)
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+*.translation
+mono_crash.*.json

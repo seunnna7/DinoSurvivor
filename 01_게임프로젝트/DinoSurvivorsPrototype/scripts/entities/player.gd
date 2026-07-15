@@ -1,0 +1,39 @@
+extends CharacterBody2D
+## 플레이어 이동 스크립트 (마일스톤 G1, G4에서 스탯 체계 연동)
+##
+## Godot 팁: @export로 선언한 변수는 에디터 우측 Inspector 창에 노출됩니다.
+## 코드를 몰라도 이 값들을 직접 조정할 수 있어서, 서브 개발자의 튜닝 포인트로 쓰기 좋습니다.
+
+@export var species: SpeciesData  ## 인스펙터에서 trex.tres 등을 지정. 프로토타입은 티라노 고정.
+
+var health: float
+var effective_move_speed: float  ## 종족 패시브 등 모디파이어가 반영된 최종 이동속도 (기획서 6.4)
+
+func _ready() -> void:
+	add_to_group("player")  # WaveManager/Enemy가 플레이어를 찾을 때 이 그룹을 사용
+	_recalculate_stats()
+	health = StatCalculator.compute(StatTypes.DEFAULT_VALUE[&"max_health"], &"max_health", _modifiers())
+
+## 종족 패시브 등에서 나온 StatModifierData를 모아 실제 스탯에 반영.
+## 지금은 종족 패시브만 반영하지만, 나중에 스탠스/메타강화/숙련도도 같은 배열에 더하면 됩니다.
+func _recalculate_stats() -> void:
+	var base_speed: float = StatTypes.DEFAULT_VALUE[&"move_speed"]
+	effective_move_speed = StatCalculator.compute(base_speed, &"move_speed", _modifiers())
+
+func _modifiers() -> Array[StatModifierData]:
+	if species == null:
+		return []
+	return species.passive_modifiers
+
+func _physics_process(_delta: float) -> void:
+	# ui_left / ui_right / ui_up / ui_down 은 Godot 기본 내장 입력(방향키)입니다.
+	# WASD로 바꾸고 싶다면: 프로젝트 설정(Project > Project Settings) > Input Map 탭에서
+	# 각 액션에 W/A/S/D 키를 추가로 등록하면 됩니다.
+	var input_dir: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	velocity = input_dir * effective_move_speed
+	move_and_slide()
+
+func take_damage(amount: float) -> void:
+	health -= amount
+	if health <= 0:
+		print("플레이어 사망 (G7에서 실제 사망 화면으로 대체 예정)")
