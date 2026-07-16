@@ -1,5 +1,5 @@
 # Dinosaur Survivors Prototype
-
+ㅎㅇㅎㅇ
 마일스톤 G0(환경 세팅) + G1(플레이어 이동)에 해당하는 최소 실행 프로젝트입니다.
 
 ## 여는 방법
