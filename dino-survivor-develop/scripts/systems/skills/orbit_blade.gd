@@ -1,6 +1,6 @@
 class_name OrbitBlade
 extends Area2D
-## 골판 두르기의 골판 하나. plate_wrap_skill.gd가 스폰해서 매 프레임 위치를 갱신합니다.
+## 골판 두르기의 골판 하나. orbit_blade_skill.gd가 스폰해서 매 프레임 위치를 갱신합니다.
 ## 겹친 적에게 hit_interval마다 반복 데미지를 줍니다 (enemy.gd의 접촉 데미지 판정과 같은 개념).
 
 var damage: float = 0.0

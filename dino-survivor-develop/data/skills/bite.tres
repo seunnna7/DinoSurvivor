@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://c3s4lcggsl7e6" path="res://scenes/skills/BiteSkill.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/skills/BiteHitEffect.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://ctllic6uoe7cf" path="res://scenes/skills/BiteHitEffect.tscn" id="3"]
 
 [resource]
 script = ExtResource("1")

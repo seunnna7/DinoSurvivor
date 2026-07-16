@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://ctllic6uoe7cf"]
 
-[ext_resource type="Script" path="res://scripts/systems/skills/bite_hit_effect.gd" id="1"]
+[ext_resource type="Script" uid="uid://bv3afqi5p6hqf" path="res://scripts/systems/skills/bite_hit_effect.gd" id="1"]
 
-[node name="BiteHitEffect" type="Node2D"]
+[node name="BiteHitEffect" type="Node2D" unique_id=1916851678]
 script = ExtResource("1")
