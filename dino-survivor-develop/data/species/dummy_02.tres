@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="SpeciesData" format=3 uid="uid://b3xpihh80g40a"]
+
+[ext_resource type="Script" uid="uid://dt78uik5ysibf" path="res://resource_types/species_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"dummy_02"
+display_name = "더미 캐릭터 B"
+passive_flavor_text = "테스트용 더미 캐릭터입니다. 실제 패시브 효과는 없습니다."

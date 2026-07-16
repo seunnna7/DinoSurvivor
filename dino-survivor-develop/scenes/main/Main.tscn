@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://b2hswcw6p1dem"]
+
+[ext_resource type="PackedScene" path="res://scenes/entities/Player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://cibph1fq3olm5" path="res://scripts/debug/grid_background.gd" id="2_grid"]
+[ext_resource type="Script" uid="uid://dfb7dvmuoayrg" path="res://scripts/systems/main.gd" id="3_main"]
+[ext_resource type="PackedScene" path="res://scenes/ui/GameUI.tscn" id="4_ui"]
+
+[node name="Main" type="Node2D" unique_id=1919807449]
+script = ExtResource("3_main")
+
+[node name="GridBackground" type="Node2D" parent="." unique_id=1742934295]
+script = ExtResource("2_grid")
+
+[node name="Player" parent="." unique_id=801142140 instance=ExtResource("1_player")]
+
+[node name="EnemyContainer" type="Node2D" parent="." unique_id=654975107]
+
+[node name="GameUI" parent="." unique_id=1785701817 instance=ExtResource("4_ui")]

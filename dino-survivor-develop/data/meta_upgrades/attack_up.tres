@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MetaUpgradeData" format=3 uid="uid://dkqlubt48tfw4"]
+
+[ext_resource type="Script" uid="uid://3inad5ng7ndy" path="res://resource_types/meta_upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"attack_up"
+display_name = "공격력 강화"
+stat_id = &"damage_mult"
+value_per_level = 5.0
+cost_base = 5
