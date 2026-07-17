@@ -7,5 +7,5 @@ script = ExtResource("1")
 id = &"dummy_thunder_bolt"
 display_name = "썬더 볼트 (Dummy)"
 flavor_text = "테스트용 더미 스킬. 실제 동작은 구현되어 있지 않습니다."
-archetype = 5
+tags = Array[StringName](["ranged_pierce"])
 icon_color = Color(0.7993413, 0.9057268, 1.540184e-06, 1)

@@ -5,18 +5,6 @@ extends Resource
 ## 이 스키마를 기반으로 data/skills/ 안에 새 .tres 파일만 만들면 됩니다.
 ## (Godot 에디터에서 우클릭 > New Resource > SkillData 로 생성 가능)
 
-enum Archetype {
-	MELEE,          ## 근접 (예: 철퇴)
-	ORBIT,          ## 몸 주변 회전 (예: 골판 두르기)
-	DASH,           ## 돌진 (예: 박치기)
-	SUMMON,         ## 소환 (예: 새끼낳기)
-	BURST,          ## 주기적 광역 (예: 음파)
-	RANGED_PIERCE,  ## 원거리 관통 (예: 손톱 미사일)
-	RANGED_SPREAD,  ## 원거리 확산 (예: 산탄)
-	SUCTION,        ## 흡입형 (예: 물기)
-	PASSIVE,        ## 패시브 (예: 긴 목)
-}
-
 enum Stance { QUADRUPED, BIPED, BOTH }
 
 const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문자열을 적어두면 description()이 base_damage로 치환
@@ -27,14 +15,13 @@ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문�
 @export_multiline var flavor_text: String  ## 플레이버 텍스트 보이스 공식 적용 (기획서 4.1.1). DAMAGE_PLACEHOLDER를 넣어두면 카드에 실제 데미지가 채워짐
 
 @export_group("분류")
-@export var archetype: Archetype = Archetype.MELEE
-@export var is_unique_active: bool = false  ## true면 공용 풀에 노출 안 됨 (특정 종족 전용)
+@export var tags: Array[StringName] = []  ## 자유 태그 (예: "melee", "summon", "projectile", "bomb"). 스킬 변주 체크와 향후 태그 기반 버프("소환수 강화" 등)에 공용으로 사용
 @export var preferred_stance: Stance = Stance.BOTH
 
 @export_group("수치")
 @export var base_damage: float = 10.0
 @export var cooldown: float = 1.0
-@export var max_level: int = 5  ## 각성(만렙) 기준
+@export var max_level: int = 5  ## 진화(만렙) 기준 (기획서 4.3)
 
 @export_group("씬 참조")
 @export var effect_scene: PackedScene  ## 투사체/이펙트 씬 (있는 경우)

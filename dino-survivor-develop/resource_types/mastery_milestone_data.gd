@@ -1,6 +1,6 @@
 class_name MasteryMilestoneData
 extends Resource
-## 숙련도 N레벨마다(간격 미정 — 기획서 8장) 고유 액티브/패시브를 직접 강화.
+## 숙련도 N레벨마다(간격 미정 — 기획서 8장) 시작 스킬/패시브를 직접 강화.
 ## 엑셀 MasteryMilestones 시트와 1:1 대응.
 ##
 ## target 표기 규칙: 점(.)이 있으면 "스킬id.수치필드" (예: "bite.base_damage"),

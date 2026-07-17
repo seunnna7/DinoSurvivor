@@ -7,7 +7,7 @@ extends Resource
 @export var display_name: String
 @export_multiline var passive_flavor_text: String  ## 사람이 읽는 설명 (UI 표시용)
 @export var passive_modifiers: Array[StatModifierData] = []  ## 실제 계산에 쓰이는 구조화된 효과 (기획서 6.4)
-@export var unique_active: SkillData               ## 고유 액티브 (기획서 3.1)
+@export var starting_skill: SkillData               ## 시작 스킬 (기획서 3.1). 공용 풀에도 그대로 포함됨 — 배타적 소유가 아니라 초기 장착일 뿐
 @export var default_stance: SkillData.Stance = SkillData.Stance.BIPED  ## 기획서 5.2
 
 @export_group("비주얼")

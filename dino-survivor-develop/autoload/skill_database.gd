@@ -26,5 +26,6 @@ func get_skill(id: StringName) -> SkillData:
 			return skill
 	return null
 
+## 모든 스킬이 공용 풀에 포함됨 (시작 스킬도 예외 없음, 기획서 3.3)
 func get_common_pool_skills() -> Array[SkillData]:
-	return all_skills.filter(func(s): return not s.is_unique_active)
+	return all_skills

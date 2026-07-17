@@ -22,4 +22,4 @@ id = &"trex"
 display_name = "티라노사우루스"
 passive_flavor_text = "공격력 +10%, 이동속도 -5%"
 passive_modifiers = Array[ExtResource("3")]([SubResource("StatModifier_dmg"), SubResource("StatModifier_speed")])
-unique_active = ExtResource("2")
+starting_skill = ExtResource("2")

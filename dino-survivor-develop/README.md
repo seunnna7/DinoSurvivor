@@ -39,7 +39,7 @@ DinoSurvivorsPrototype/
 │   ├── species/                # 종족 하나당 파일 하나 (예: trex.tres)
 │   ├── enemies/                # 몹 "단계" 하나당 파일 하나 (티어+stage로 구분)
 │   ├── loot_tables/             # 드랍 테이블 (몹 여러 개가 같은 테이블 공유 가능)
-│   └── fusion_recipes/          # 합체진화 레시피 (아직 비어있음, G6에서 사용)
+│   └── fusion_recipes/          # 합체 레시피 (아직 비어있음, G6에서 사용)
 ├── resource_types/          # 위 data/ 파일들의 "틀"(스키마) 정의 — 거의 안 바뀜
 │   ├── skill_data.gd
 │   ├── species_data.gd
