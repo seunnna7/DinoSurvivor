@@ -11,7 +11,7 @@ const DISPLAY_NAMES: Dictionary = {
 	&"ranged_pierce": "관통",
 	&"ranged_spread": "확산",
 	&"suction": "흡입",
-	&"passive": "패시브",
+	&"utility": "유틸",
 }
 
 ## 매핑에 없는 태그(추가 직후 라벨을 아직 안 붙인 경우 등)는 원본 id를 그대로 보여줌

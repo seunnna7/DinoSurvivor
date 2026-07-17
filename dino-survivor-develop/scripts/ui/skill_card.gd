@@ -6,6 +6,7 @@ extends Button
 signal selected(data: SkillData)
 
 @onready var icon_rect: ColorRect = $Margin/VBox/Icon
+@onready var category_label: Label = $Margin/VBox/CategoryLabel
 @onready var name_label: Label = $Margin/VBox/NameLabel
 @onready var tags_label: Label = $Margin/VBox/TagsLabel
 @onready var description_label: Label = $Margin/VBox/DescriptionLabel
@@ -19,6 +20,7 @@ func _ready() -> void:
 func setup(data: SkillData, owned: bool) -> void:
 	_data = data
 	icon_rect.color = data.icon_color
+	category_label.text = data.category_display_name()
 	name_label.text = data.display_name
 	tags_label.text = TagDatabase.joined_display_names(data.tags)
 	tags_label.visible = not data.tags.is_empty()

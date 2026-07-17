@@ -13,6 +13,8 @@ func _ready() -> void:
 		_add_slot(data)
 
 func _add_slot(data: SkillData) -> void:
+	if data.category == SkillData.Category.PASSIVE:
+		return  ## 패시브는 보유 스킬 HUD에 노출하지 않음 (기획서 3.1)
 	if _slots.has(data.id):
 		return
 	var slot: SkillHUDSlot = SLOT_SCENE.instantiate()
