@@ -69,6 +69,15 @@ horizontal_alignment = 1
 autowrap_mode = 2
 text = "스킬 이름"
 
+[node name="TagsLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6, 0.75, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+autowrap_mode = 2
+text = "태그"
+
 [node name="DescriptionLabel" type="Label" parent="Margin/VBox"]
 layout_mode = 2
 mouse_filter = 2

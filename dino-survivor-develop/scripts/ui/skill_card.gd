@@ -7,6 +7,7 @@ signal selected(data: SkillData)
 
 @onready var icon_rect: ColorRect = $Margin/VBox/Icon
 @onready var name_label: Label = $Margin/VBox/NameLabel
+@onready var tags_label: Label = $Margin/VBox/TagsLabel
 @onready var description_label: Label = $Margin/VBox/DescriptionLabel
 @onready var owned_label: Label = $Margin/VBox/OwnedLabel
 
@@ -19,6 +20,8 @@ func setup(data: SkillData, owned: bool) -> void:
 	_data = data
 	icon_rect.color = data.icon_color
 	name_label.text = data.display_name
+	tags_label.text = TagDatabase.joined_display_names(data.tags)
+	tags_label.visible = not data.tags.is_empty()
 	description_label.text = data.description()
 	owned_label.visible = owned
 	if owned:
