@@ -1,0 +1,221 @@
+From f19e7a8077eacaa53d6290791e23d953cb02c2ef Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 17 Jul 2026 09:48:54 +0000
+Subject: [PATCH] =?UTF-8?q?=EC=95=A1=ED=8B=B0=EB=B8=8C/=ED=8C=A8=EC=8B=9C?=
+ =?UTF-8?q?=EB=B8=8C=20=EB=8C=80=EB=B6=84=EB=A5=98=20=EC=B6=94=EA=B0=80=20?=
+ =?UTF-8?q?(=ED=83=9C=EA=B7=B8=EC=99=80=20=EB=B6=84=EB=A6=AC)=20+=20?=
+ =?UTF-8?q?=EB=A0=88=EB=B2=A8=EC=97=85=20=EC=B9=B4=EB=93=9C=20=EB=85=B8?=
+ =?UTF-8?q?=EC=B6=9C?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- SkillData: category(ACTIVE/PASSIVE) 필드 추가, passive_modifiers 배열 신설
+  (StatModifierData.stat_id에 "태그.효과필드" 점(.) 표기로 그 태그를 가진 액티브 스킬
+  전체를 겨냥, 예: "projectile.range". 특정 스킬 하나를 직접 지정하는
+  MasteryMilestoneData.target("스킬id.수치필드")과는 좌변 의미가 다름)
+- skill_hud.gd: 패시브는 보유 스킬 HUD(화면 하단)에서 제외, 액티브만 노출
+- skill_card.gd / SkillCard.tscn: 레벨업 카드에 액티브/패시브 대분류 표시(CategoryLabel) 추가
+- 더미 패시브 스킬 2종: tags=["passive"] → category=PASSIVE로 이전, tags에서 "passive" 제거
+- TagDatabase: "passive" 태그 제거(대분류로 이전), "utility" 태그 추가
+- 기획서 4.2.1: 액티브/패시브 대분류, 레벨업 카드 노출, 태그 기반 패시브 강화 2종류 정리,
+  효과필드 표준화 필요성을 Open Question으로 추가
+---
+ ...\254_\352\270\260\355\232\215\354\204\234.md" | 16 ++++++++++++++--
+ dino-survivor-develop/autoload/tag_database.gd   |  2 +-
+ .../data/skills/dummy_ice_shield.tres            |  2 +-
+ .../data/skills/dummy_speed_boost.tres           |  2 +-
+ .../resource_types/skill_data.gd                 |  9 +++++++++
+ .../resource_types/stat_modifier_data.gd         |  2 +-
+ dino-survivor-develop/scenes/ui/SkillCard.tscn   |  9 +++++++++
+ dino-survivor-develop/scripts/ui/skill_card.gd   |  2 ++
+ dino-survivor-develop/scripts/ui/skill_hud.gd    |  2 ++
+ 9 files changed, 40 insertions(+), 6 deletions(-)
+
+diff --git "a/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md" "b/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
+index 41a5f4c..32b2843 100644
+--- "a/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
++++ "b/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
+@@ -91,13 +91,23 @@
+ | 철퇴 | 안킬로사우루스 | 공용 액티브 | `melee` | 느림, 강한 한방 + 강한 넉백 |
+ | 새끼낳기 | 마이아사우라 | 공용 액티브 | `summon` | 새끼 소환, 자동 근접 전투 (LoL 요릭 구울 참고) |
+ | 음파 | 파라사우롤로푸스 | 공용 액티브 | `burst` | 주기적으로 광역 충격파 발생 |
+-| 긴 목 | 브라키오사우루스 | 공용 **패시브** | `passive` | 아이템/경험치 수집 범위 증가 |
++| 긴 목 | 브라키오사우루스 | 공용 **패시브** | `utility` | 아이템/경험치 수집 범위 증가 |
+ | 손톱 미사일 | 테리지노사우루스 | 공용 액티브 | `ranged_pierce` | 손톱이 빠져나가 일직선 관통 발사 |
+ | 산탄 | 딜로포사우루스 | 공용 액티브 | `ranged_spread` | 볏이 탄창처럼 부채꼴로 다수 발사. *"딜로포사우루스의 볏은 탄창 겸 가늠자였다고 합니다. 뭐, 그랬을 수도 있잖아요?"* |
+ 
+ **태그 체계 (4.3.1 참고)**: 표의 태그는 스킬당 하나지만, 데이터 스키마상으로는 스킬 하나가 여러 태그를 동시에 가질 수 있음 (예: 소환수가 투사체를 쏘면 `summon`+`projectile`). 지금은 변주 체크용으로 한 개씩만 부여했지만, 이후 "태그 대상 버프"(예: 소환수 강화)의 타겟팅 키로 그대로 재사용.
+ 
+-**변주 체크**: 근접(철퇴)·오빗(골판)·돌진(박치기)·소환(새끼)·버스트(음파)·원거리 관통(손톱)·원거리 확산(산탄)·흡입(물기)·패시브(긴목) — 겹침 없이 고르게 분산됨.
++**변주 체크**: 근접(철퇴)·오빗(골판)·돌진(박치기)·소환(새끼)·버스트(음파)·원거리 관통(손톱)·원거리 확산(산탄)·흡입(물기) — 액티브 8종은 겹침 없이 고르게 분산됨. 유일한 패시브(긴목)는 태그가 아니라 4.2.1의 대분류로 액티브와 구분됨.
++
++#### 4.2.1 액티브 vs 패시브 (대분류)
++- 스킬은 태그와 별개로 **액티브/패시브** 대분류(`SkillData.category`)를 가짐. 3.1의 "종족 고정 패시브"와는 별개 개념 — 이건 공용 풀 스킬 하나하나(긴 목처럼)에 붙는 값
++- **패시브는 보유 스킬 HUD(화면 하단)에 노출되지 않음** — 액티브 스킬만 표시. 단, 레벨업 카드 선택지에는 액티브/패시브 구분 없이 그대로 등장 (긴 목도 똑같이 뽑힐 수 있음)
++- **레벨업 카드에도 이 대분류가 노출됨** — 스킬 카드에 "액티브"/"패시브" 표기가 태그와 함께 표시됨
++- **패시브 효과는 두 갈래**:
++  1. **전역 스탯 강화** (예: 이동속도 +5%) — 기존 `StatModifierData` 방식 그대로 사용
++  2. **특정 태그를 겨냥한 강화** — 특정 스킬 하나를 직접 지정하는 게 아니라 **그 태그를 가진 스킬 전체**에 적용됨 (예: "투사체(`projectile`) 태그 스킬의 사거리를 넓힌다", "중독(`poison`) 태그 스킬의 중독 효과를 강화한다"). 그래서 지금 어떤 액티브를 들고 있는지에 따라 같은 패시브의 실효과가 달라짐 — `StatModifierData.stat_id`에 "태그.효과필드" 점(.) 표기법 사용 (예: `"projectile.range"`, `"poison.duration"`). **주의**: `MasteryMilestoneData.target`의 "스킬id.수치필드" 표기(특정 스킬 하나를 직접 지정)와는 좌변 의미가 다름 — 마일스톤은 종족 정체성 스킬 하나를 직접 겨냥하는 반면, 패시브 스킬은 태그로 범위를 지정
++- 위 두 효과를 실제로 적용하는 스탯 계산기는 아직 미구현 — 6.4의 스탯 중첩 규칙 확정과 함께 구현 예정 (8장 Open Question)
++- **효과필드 표준화 필요**: "range"(사거리), "projectile_count"(투사체 개수), "poison_duration"(중독 지속시간) 같은 필드명은 아직 스킬마다 각자 로직 스크립트에 하드코딩된 상수(예: `bite_skill.gd`의 `const RANGE`)일 뿐, 태그 단위로 공통 조회/수정 가능한 표준 스키마가 없음 — 태그 대상 패시브를 실제로 구현하려면 이 표준화가 선행되어야 함 (8장 Open Question)
+ 
+ **주의**: 골판 두르기(지속형)와 음파(순간 버스트형)는 둘 다 "몸 주변 광역"이라 컨셉이 비슷해 보이지만, 지속 딜 vs 스파이크 딜로 역할을 분리해 차별화.
+ 
+@@ -313,6 +323,8 @@ Lv.1 ── Lv.2 ── Lv.3 ── Lv.4 ── Lv.5(만렙)
+ 12. 태그 목록(`melee`/`summon`/`projectile`/`bomb` 등) 전체 확정 및 명명 규칙 — 노출 라벨 매핑 방식(`TagDatabase`)은 확정, 태그 어휘 자체는 앞으로 계속 늘어날 예정이라 계속 갱신 필요
+ 13. 태그 대상 버프(예: "소환수 강화")의 실제 발생 경로(레벨업 카드/메타 강화/숙련도 중 어디서 나올지) — 아직 소비처 없음, 스키마만 준비된 상태
+ 14. `공룡_뱀서라이크_기획데이터.xlsx`의 Skills 시트에서 `archetype`/`is_unique_active` 컬럼을 `tags`(다중값)로 교체 반영 필요
++15. 패시브 스킬(`SkillData.passive_modifiers`)의 "태그.효과필드" 타겟팅을 실제로 적용하는 스탯 계산기 구현 — 6.4/9번 항목과 함께 팀 확정 필요
++16. 태그별 효과필드(`range`/`projectile_count`/`poison_duration` 등) 이름 표준화 — 지금은 스킬 로직 스크립트마다 제각각인 하드코딩 상수라, 태그 대상 패시브가 공통으로 조회/수정할 수 있는 스키마가 아직 없음
+ 
+ ---
+ 
+diff --git a/dino-survivor-develop/autoload/tag_database.gd b/dino-survivor-develop/autoload/tag_database.gd
+index 586faeb..48c4833 100644
+--- a/dino-survivor-develop/autoload/tag_database.gd
++++ b/dino-survivor-develop/autoload/tag_database.gd
+@@ -11,7 +11,7 @@ const DISPLAY_NAMES: Dictionary = {
+ 	&"ranged_pierce": "관통",
+ 	&"ranged_spread": "확산",
+ 	&"suction": "흡입",
+-	&"passive": "패시브",
++	&"utility": "유틸",
+ }
+ 
+ ## 매핑에 없는 태그(추가 직후 라벨을 아직 안 붙인 경우 등)는 원본 id를 그대로 보여줌
+diff --git a/dino-survivor-develop/data/skills/dummy_ice_shield.tres b/dino-survivor-develop/data/skills/dummy_ice_shield.tres
+index b195b38..fb17f86 100644
+--- a/dino-survivor-develop/data/skills/dummy_ice_shield.tres
++++ b/dino-survivor-develop/data/skills/dummy_ice_shield.tres
+@@ -8,7 +8,7 @@ id = &"dummy_ice_shield"
+ display_name = "아이스 실드 (Dummy)"
+ species_motif = ""
+ flavor_text = "테스트용 더미 스킬. 실제 동작은 구현되어 있지 않습니다."
+-tags = Array[StringName](["passive"])
++category = 1
+ base_damage = 10.0
+ cooldown = 1.0
+ max_level = 5
+diff --git a/dino-survivor-develop/data/skills/dummy_speed_boost.tres b/dino-survivor-develop/data/skills/dummy_speed_boost.tres
+index 02e8c60..8243d4e 100644
+--- a/dino-survivor-develop/data/skills/dummy_speed_boost.tres
++++ b/dino-survivor-develop/data/skills/dummy_speed_boost.tres
+@@ -8,7 +8,7 @@ id = &"dummy_speed_boost"
+ display_name = "스피드 부스트 (Dummy)"
+ species_motif = ""
+ flavor_text = "테스트용 더미 스킬. 실제 동작은 구현되어 있지 않습니다."
+-tags = Array[StringName](["passive"])
++category = 1
+ base_damage = 10.0
+ cooldown = 1.0
+ max_level = 5
+diff --git a/dino-survivor-develop/resource_types/skill_data.gd b/dino-survivor-develop/resource_types/skill_data.gd
+index e9e6f0d..fa75166 100644
+--- a/dino-survivor-develop/resource_types/skill_data.gd
++++ b/dino-survivor-develop/resource_types/skill_data.gd
+@@ -6,6 +6,7 @@ extends Resource
+ ## (Godot 에디터에서 우클릭 > New Resource > SkillData 로 생성 가능)
+ 
+ enum Stance { QUADRUPED, BIPED, BOTH }
++enum Category { ACTIVE, PASSIVE }  ## 태그와 별개인 대분류 (기획서 3.1). PASSIVE는 메인 런 화면 보유 스킬 HUD에 노출되지 않음
+ 
+ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문자열을 적어두면 description()이 base_damage로 치환
+ 
+@@ -15,6 +16,7 @@ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문
+ @export_multiline var flavor_text: String  ## 플레이버 텍스트 보이스 공식 적용 (기획서 4.1.1). DAMAGE_PLACEHOLDER를 넣어두면 카드에 실제 데미지가 채워짐
+ 
+ @export_group("분류")
++@export var category: Category = Category.ACTIVE
+ @export var tags: Array[StringName] = []  ## 자유 태그 (예: "melee", "summon", "projectile", "bomb"). 스킬 변주 체크와 향후 태그 기반 버프("소환수 강화" 등)에 공용으로 사용
+ @export var preferred_stance: Stance = Stance.BOTH
+ 
+@@ -27,6 +29,9 @@ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문
+ @export var effect_scene: PackedScene  ## 투사체/이펙트 씬 (있는 경우)
+ @export var logic_scene: PackedScene   ## 이 스킬의 실제 동작을 구현한 로직 씬 (SkillInstanceBase 상속). 비어있으면 "더미"(UI에만 존재, 실제 동작 없음)
+ 
++@export_group("패시브 효과")
++@export var passive_modifiers: Array[StatModifierData] = []  ## category가 PASSIVE일 때만 사용. 각 항목의 stat_id에 점(.)이 있으면 "태그.효과필드"로 그 태그를 가진 액티브 스킬 전체를 겨냥(예: "projectile.range" → 투사체 태그 스킬 전부의 사거리 증가), 없으면 전역 스탯(기획서 6.4) 강화. 특정 스킬 하나를 직접 지정하는 MasteryMilestoneData.target("스킬id.수치필드")과는 좌변 의미가 다름 — 기획서 4.2.1
++
+ @export_group("표시")
+ @export var icon_color: Color = Color(0.8, 0.8, 0.8, 1.0)  ## 스킬 아이콘 자리표시용 색상 (실제 아이콘 이미지로 교체 전까지)
+ 
+@@ -34,6 +39,10 @@ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문
+ func description() -> String:
+ 	return flavor_text.replace(DAMAGE_PLACEHOLDER, _format_number(base_damage))
+ 
++## 스킬 카드 등에 표시할 대분류 라벨.
++func category_display_name() -> String:
++	return "패시브" if category == Category.PASSIVE else "액티브"
++
+ ## 정수면 "15", 소수면 "12.5"처럼 불필요한 소수점을 생략해서 표시.
+ static func _format_number(value: float) -> String:
+ 	if value == floor(value):
+diff --git a/dino-survivor-develop/resource_types/stat_modifier_data.gd b/dino-survivor-develop/resource_types/stat_modifier_data.gd
+index 60f7c44..74c1b5e 100644
+--- a/dino-survivor-develop/resource_types/stat_modifier_data.gd
++++ b/dino-survivor-develop/resource_types/stat_modifier_data.gd
+@@ -9,6 +9,6 @@ enum ModifierType { ADDITIVE_FLAT, ADDITIVE_PERCENT, MULTIPLICATIVE }
+ 
+ @export var source_type: SourceType = SourceType.SPECIES_PASSIVE
+ @export var source_id: StringName  ## 예: "trex", "quadruped"
+-@export var stat_id: StringName    ## StatTypes에 정의된 스탯 중 하나
++@export var stat_id: StringName    ## 점(.)이 있으면 좌변 해석이 source_type에 따라 다름 — SKILL_PASSIVE는 "태그.효과필드"(그 태그를 가진 스킬 전체를 겨냥, 예: "projectile.range"), MASTERY는 "스킬id.수치필드"(특정 스킬 하나를 직접 지정, 예: "bite.base_damage"). 점이 없으면 StatTypes에 정의된 전역 스탯
+ @export var modifier_type: ModifierType = ModifierType.ADDITIVE_PERCENT
+ @export var value: float = 0.0
+diff --git a/dino-survivor-develop/scenes/ui/SkillCard.tscn b/dino-survivor-develop/scenes/ui/SkillCard.tscn
+index ada6695..55ab9dd 100644
+--- a/dino-survivor-develop/scenes/ui/SkillCard.tscn
++++ b/dino-survivor-develop/scenes/ui/SkillCard.tscn
+@@ -61,6 +61,15 @@ size_flags_horizontal = 4
+ mouse_filter = 2
+ color = Color(0.8, 0.8, 0.8, 1)
+ 
++[node name="CategoryLabel" type="Label" parent="Margin/VBox"]
++layout_mode = 2
++mouse_filter = 2
++theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
++theme_override_font_sizes/font_size = 12
++horizontal_alignment = 1
++autowrap_mode = 2
++text = "액티브"
++
+ [node name="NameLabel" type="Label" parent="Margin/VBox"]
+ layout_mode = 2
+ mouse_filter = 2
+diff --git a/dino-survivor-develop/scripts/ui/skill_card.gd b/dino-survivor-develop/scripts/ui/skill_card.gd
+index 0668c21..da4a64b 100644
+--- a/dino-survivor-develop/scripts/ui/skill_card.gd
++++ b/dino-survivor-develop/scripts/ui/skill_card.gd
+@@ -6,6 +6,7 @@ extends Button
+ signal selected(data: SkillData)
+ 
+ @onready var icon_rect: ColorRect = $Margin/VBox/Icon
++@onready var category_label: Label = $Margin/VBox/CategoryLabel
+ @onready var name_label: Label = $Margin/VBox/NameLabel
+ @onready var tags_label: Label = $Margin/VBox/TagsLabel
+ @onready var description_label: Label = $Margin/VBox/DescriptionLabel
+@@ -19,6 +20,7 @@ func _ready() -> void:
+ func setup(data: SkillData, owned: bool) -> void:
+ 	_data = data
+ 	icon_rect.color = data.icon_color
++	category_label.text = data.category_display_name()
+ 	name_label.text = data.display_name
+ 	tags_label.text = TagDatabase.joined_display_names(data.tags)
+ 	tags_label.visible = not data.tags.is_empty()
+diff --git a/dino-survivor-develop/scripts/ui/skill_hud.gd b/dino-survivor-develop/scripts/ui/skill_hud.gd
+index 044d585..0c7d9e9 100644
+--- a/dino-survivor-develop/scripts/ui/skill_hud.gd
++++ b/dino-survivor-develop/scripts/ui/skill_hud.gd
+@@ -13,6 +13,8 @@ func _ready() -> void:
+ 		_add_slot(data)
+ 
+ func _add_slot(data: SkillData) -> void:
++	if data.category == SkillData.Category.PASSIVE:
++		return  ## 패시브는 보유 스킬 HUD에 노출하지 않음 (기획서 3.1)
+ 	if _slots.has(data.id):
+ 		return
+ 	var slot: SkillHUDSlot = SLOT_SCENE.instantiate()
+-- 
+2.43.0
+

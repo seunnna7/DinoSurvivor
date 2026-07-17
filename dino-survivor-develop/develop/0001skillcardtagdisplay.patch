@@ -1,0 +1,131 @@
+From 65cdf6735ece4dc7a553a8df24552eb6f8ed0cd0 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 17 Jul 2026 09:37:46 +0000
+Subject: [PATCH] =?UTF-8?q?=EC=8A=A4=ED=82=AC=20=EC=B9=B4=EB=93=9C?=
+ =?UTF-8?q?=EC=97=90=20=ED=83=9C=EA=B7=B8=20=EB=85=B8=EC=B6=9C=20(TagDatab?=
+ =?UTF-8?q?ase=20=EC=B6=94=EA=B0=80)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- autoload/tag_database.gd: 태그 id → 한글 라벨 딕셔너리(TagDatabase), 신규 autoload 등록
+- skill_card.gd / SkillCard.tscn: TagsLabel 추가해 스킬 태그를 한글 라벨로 표시
+- 기획서 4.3.1: 내부 id ↔ 노출 라벨 분리 지점(TagDatabase) 명시
+---
+ ...4_\352\270\260\355\232\215\354\204\234.md" |  3 ++-
+ .../autoload/tag_database.gd                  | 26 +++++++++++++++++++
+ dino-survivor-develop/project.godot           |  1 +
+ .../scenes/ui/SkillCard.tscn                  |  9 +++++++
+ .../scripts/ui/skill_card.gd                  |  3 +++
+ 5 files changed, 41 insertions(+), 1 deletion(-)
+ create mode 100644 dino-survivor-develop/autoload/tag_database.gd
+
+diff --git "a/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md" "b/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
+index 446924b..41a5f4c 100644
+--- "a/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
++++ "b/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
+@@ -123,6 +123,7 @@ Lv.1 ── Lv.2 ── Lv.3 ── Lv.4 ── Lv.5(만렙)
+ - 스킬은 `SkillData.tags: Array[StringName]`로 다중 분류됨 (예: `melee`, `summon`, `projectile`, `bomb`). 4.2 표의 값은 변주 체크용으로 하나씩만 부여했지만, 스킬 하나가 여러 태그를 동시에 가질 수 있는 구조
+ - **용도**: (1) 신규 스킬 추가 시 기존 아키타입과 안 겹치는지 변주 체크, (2) 향후 태그를 겨냥한 버프의 타겟팅 키 (예: "소환수 강화" 효과가 `summon` 태그를 가진 스킬 전체에 적용)
+ - 진화/합체로 스킬이 교체될 때 태그도 새로 부여됨 — 진화형이 원본과 다른 정체성을 가지면(예: 근접형이 진화하며 광역형이 되는 경우) 태그도 그에 맞게 갈아낌
++- **내부 id ↔ 노출 라벨 분리**: `tags`에 담기는 값(`summon` 등)은 시스템 내부 식별자일 뿐, 화면에는 `TagDatabase`(Autoload, `autoload/tag_database.gd`) 안의 `DISPLAY_NAMES` 딕셔너리를 거쳐 한글 라벨(`소환수` 등)로 변환되어 노출됨. 새 태그를 추가하면 이 딕셔너리에 한 줄만 추가하면 됨 (스킬 카드는 `TagDatabase.joined_display_names(tags)`로 조회)
+ 
+ #### 합체 재료 구조
+ - **재료 개수**: 기본 2개. 특정 레시피는 예외적으로 3개까지 허용 — `FusionRecipe.ingredients`가 배열이라 스키마 변경 없이 지원
+@@ -309,7 +310,7 @@ Lv.1 ── Lv.2 ── Lv.3 ── Lv.4 ── Lv.5(만렙)
+ 9. 스탯 중첩 규칙(`additive_percent` 통일) 최종 확정 — 현재는 제안 상태
+ 10. 나머지 스킬 8종의 정확한 수치(데미지/쿨다운/범위) — `공룡_뱀서라이크_기획데이터.xlsx`의 Skills 시트에서 관리
+ 11. 스킬별 Lv3 "특징적 강화"의 구체 내용 (스킬 9종 각각 무엇이 바뀌는지) — 미정
+-12. 태그 목록(`melee`/`summon`/`projectile`/`bomb` 등) 전체 확정 및 명명 규칙 — 지금은 예시 수준
++12. 태그 목록(`melee`/`summon`/`projectile`/`bomb` 등) 전체 확정 및 명명 규칙 — 노출 라벨 매핑 방식(`TagDatabase`)은 확정, 태그 어휘 자체는 앞으로 계속 늘어날 예정이라 계속 갱신 필요
+ 13. 태그 대상 버프(예: "소환수 강화")의 실제 발생 경로(레벨업 카드/메타 강화/숙련도 중 어디서 나올지) — 아직 소비처 없음, 스키마만 준비된 상태
+ 14. `공룡_뱀서라이크_기획데이터.xlsx`의 Skills 시트에서 `archetype`/`is_unique_active` 컬럼을 `tags`(다중값)로 교체 반영 필요
+ 
+diff --git a/dino-survivor-develop/autoload/tag_database.gd b/dino-survivor-develop/autoload/tag_database.gd
+new file mode 100644
+index 0000000..586faeb
+--- /dev/null
++++ b/dino-survivor-develop/autoload/tag_database.gd
+@@ -0,0 +1,26 @@
++extends Node
++## SkillData.tags의 내부 id(예: "summon")를 플레이어에게 보여줄 한글 라벨(예: "소환수")로 변환합니다.
++## 새 태그를 추가하면 DISPLAY_NAMES에 한 줄만 추가하면 됩니다 (기획서 4.3.1).
++
++const DISPLAY_NAMES: Dictionary = {
++	&"melee": "근접",
++	&"orbit": "회전",
++	&"dash": "돌진",
++	&"summon": "소환수",
++	&"burst": "버스트",
++	&"ranged_pierce": "관통",
++	&"ranged_spread": "확산",
++	&"suction": "흡입",
++	&"passive": "패시브",
++}
++
++## 매핑에 없는 태그(추가 직후 라벨을 아직 안 붙인 경우 등)는 원본 id를 그대로 보여줌
++func display_name(tag: StringName) -> String:
++	return DISPLAY_NAMES.get(tag, String(tag))
++
++## 스킬 카드 등에서 태그 여러 개를 한 줄로 이어붙여 보여줄 때 사용
++func joined_display_names(tags: Array[StringName], separator: String = " · ") -> String:
++	var names: PackedStringArray = []
++	for tag in tags:
++		names.append(display_name(tag))
++	return separator.join(names)
+diff --git a/dino-survivor-develop/project.godot b/dino-survivor-develop/project.godot
+index 034d95a..34c4412 100644
+--- a/dino-survivor-develop/project.godot
++++ b/dino-survivor-develop/project.godot
+@@ -25,6 +25,7 @@ SkillDatabase="*res://autoload/skill_database.gd"
+ SpeciesDatabase="*res://autoload/species_database.gd"
+ WaveManager="*res://autoload/wave_manager.gd"
+ MetaProgress="*res://autoload/meta_progress.gd"
++TagDatabase="*res://autoload/tag_database.gd"
+ 
+ [rendering]
+ 
+diff --git a/dino-survivor-develop/scenes/ui/SkillCard.tscn b/dino-survivor-develop/scenes/ui/SkillCard.tscn
+index 9f1fe07..ada6695 100644
+--- a/dino-survivor-develop/scenes/ui/SkillCard.tscn
++++ b/dino-survivor-develop/scenes/ui/SkillCard.tscn
+@@ -69,6 +69,15 @@ horizontal_alignment = 1
+ autowrap_mode = 2
+ text = "스킬 이름"
+ 
++[node name="TagsLabel" type="Label" parent="Margin/VBox"]
++layout_mode = 2
++mouse_filter = 2
++theme_override_colors/font_color = Color(0.6, 0.75, 0.9, 1)
++theme_override_font_sizes/font_size = 12
++horizontal_alignment = 1
++autowrap_mode = 2
++text = "태그"
++
+ [node name="DescriptionLabel" type="Label" parent="Margin/VBox"]
+ layout_mode = 2
+ mouse_filter = 2
+diff --git a/dino-survivor-develop/scripts/ui/skill_card.gd b/dino-survivor-develop/scripts/ui/skill_card.gd
+index d2a2cf7..0668c21 100644
+--- a/dino-survivor-develop/scripts/ui/skill_card.gd
++++ b/dino-survivor-develop/scripts/ui/skill_card.gd
+@@ -7,6 +7,7 @@ signal selected(data: SkillData)
+ 
+ @onready var icon_rect: ColorRect = $Margin/VBox/Icon
+ @onready var name_label: Label = $Margin/VBox/NameLabel
++@onready var tags_label: Label = $Margin/VBox/TagsLabel
+ @onready var description_label: Label = $Margin/VBox/DescriptionLabel
+ @onready var owned_label: Label = $Margin/VBox/OwnedLabel
+ 
+@@ -19,6 +20,8 @@ func setup(data: SkillData, owned: bool) -> void:
+ 	_data = data
+ 	icon_rect.color = data.icon_color
+ 	name_label.text = data.display_name
++	tags_label.text = TagDatabase.joined_display_names(data.tags)
++	tags_label.visible = not data.tags.is_empty()
+ 	description_label.text = data.description()
+ 	owned_label.visible = owned
+ 	if owned:
+-- 
+2.43.0
+
