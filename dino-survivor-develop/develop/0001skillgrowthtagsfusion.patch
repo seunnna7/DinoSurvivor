@@ -1,0 +1,539 @@
+From f6b3e4b320e4d826c299ce1040d4d0822b404f20 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 17 Jul 2026 05:25:46 +0000
+Subject: [PATCH] =?UTF-8?q?=EC=8A=A4=ED=82=AC=20=EC=84=B1=EC=9E=A5/?=
+ =?UTF-8?q?=ED=83=9C=EA=B7=B8/=ED=95=A9=EC=B2=B4=20=EA=B5=AC=EC=A1=B0=20?=
+ =?UTF-8?q?=EC=9E=AC=EC=A0=95=EC=9D=98?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- SkillData: Archetype enum·is_unique_active 제거, 다중 태그(tags) 배열로 통합
+- SpeciesData: unique_active → starting_skill (배타적 소유 개념 폐지, 공용 풀에 포함)
+- FusionRecipe: require_all_max_level → require_all_evolved (진화 완료 기준으로 명확화)
+- 기획서: Lv1~5 성장 원칙(Lv2/4 수치, Lv3 특징적 강화, Lv5 진화), 진화 스킬 만렙=Lv1,
+  합체 레이어 단일화, 재료 2~3개 허용 등 반영
+---
+ ...4_\352\270\260\355\232\215\354\204\234.md" | 133 ++++++++++--------
+ dino-survivor-develop/README.md               |   2 +-
+ .../autoload/skill_database.gd                |   3 +-
+ dino-survivor-develop/data/skills/bite.tres   |   3 +-
+ .../data/skills/dummy_fire_bolt.tres          |   2 +-
+ .../data/skills/dummy_ice_shield.tres         |   3 +-
+ .../data/skills/dummy_speed_boost.tres        |   3 +-
+ .../data/skills/dummy_thunder_bolt.tres       |   2 +-
+ dino-survivor-develop/data/skills/mace.tres   |   1 +
+ .../data/skills/orbit_blade.tres              |   2 +-
+ dino-survivor-develop/data/species/trex.tres  |   2 +-
+ .../resource_types/fusion_recipe.gd           |   9 +-
+ .../resource_types/mastery_milestone_data.gd  |   2 +-
+ .../resource_types/skill_data.gd              |  17 +--
+ .../resource_types/species_data.gd            |   2 +-
+ .../scripts/systems/skills/bite_skill.gd      |   2 +-
+ ...4_\352\260\200\354\235\264\353\223\234.md" |   2 +-
+ 17 files changed, 95 insertions(+), 95 deletions(-)
+
+diff --git "a/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md" "b/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
+index d3e9260..446924b 100644
+--- "a/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
++++ "b/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
+@@ -1,8 +1,8 @@
+ # 공룡 뱀서라이크 (가칭) 기획서
+ 
+-> 버전: v0.3 (몹 티어/드랍/메타 성장 시스템 반영, G0~G2 구현 완료·G3 진행 중)
+-> 최종 업데이트: 2026-07-14
+-> 상태: 코어 시스템 + 시그니처 시스템(유전/스탠스/탈피) + 성장 경제(몹/드랍/골드강화/숙련도) 설계 확정. 데이터 관리는 `공룡_뱀서라이크_기획데이터.xlsx` 병행
++> 버전: v0.4 (스킬 성장·태그·합체 구조 재정의, G0~G2 구현 완료·G3 진행 중)
++> 최종 업데이트: 2026-07-17
++> 상태: 코어 시스템 + 시그니처 시스템(유전/스탠스/탈피) + 성장 경제(몹/드랍/골드강화/숙련도) 설계 확정. 데이터 관리는 `공룡_뱀서라이크_기획데이터.xlsx` 병행 (Skills 시트의 `archetype`/`is_unique_active` 컬럼은 `tags`로 대체 필요 — 8장 참고)
+ 
+ ---
+ 
+@@ -30,7 +30,7 @@
+   → 자동 공격 (장착 액티브 스킬)
+     → 몹 처치 → 경험치 획득
+       → 레벨업 → 스킬 선택지 제시
+-        → 스킬 만렙 시 각성 + 조건 충족 시 합체진화
++        → 스킬 만렙(Lv5) 시 진화 + 조건 충족 시 합체
+           → 웨이브 난이도 상승 (시간 경과)
+             → 생존 지속 or 사망
+ ```
+@@ -45,15 +45,15 @@
+ 캐릭터(공룡 종족)별 차별점은 아래 두 가지로 구성:
+ 
+ 1. **패시브** — 캐릭터 고정, 게임 내내 유지
+-2. **고유 액티브** — 캐릭터 전용 기본 공격. 시작 시 기본 장착되며, 다른 종족은 획득 불가
++2. **시작 스킬** — 캐릭터가 시작 시 기본 장착하는 액티브 하나. 배타적 소유가 아니라 초기 장착일 뿐이며, 공용 스킬 풀에도 동일하게 포함됨 (다른 종족도 레벨업으로 같은 스킬을 획득 가능)
+ 
+ ### 3.2 슬롯 구조
+-- 액티브 슬롯: **6개** (고유 액티브 포함, 교체 가능)
+-- 고유 액티브는 6슬롯 중 하나를 기본으로 차지하지만, 플레이어가 원하면 다른 스킬로 교체 가능 (정체성 vs 유연성의 선택 긴장감을 의도적으로 남김)
++- 액티브 슬롯: **6개** (시작 스킬 포함, 교체 가능)
++- 시작 스킬은 6슬롯 중 하나를 기본으로 차지하지만, 플레이어가 원하면 다른 스킬로 교체 가능 (정체성 vs 유연성의 선택 긴장감을 의도적으로 남김)
+ 
+ ### 3.3 스킬 풀 구조
+-- **공용 스킬 풀**: 전종족 공통. 어떤 캐릭터든 랜덤으로 타종족 스킬 획득 가능 (크로스오버)
+-- **고유 액티브**: 종족별 1개, 공용 풀에는 포함되지 않음
++- **공용 스킬 풀**: 전종족 공통, 시작 스킬을 포함한 모든 스킬이 이 풀 하나에 속함. 어떤 캐릭터든 랜덤으로 타종족 스킬(혹은 자신의 시작 스킬)을 획득 가능 (크로스오버)
++- 종족별 배타적 전용 스킬은 없음 — "이 스킬은 특정 캐릭터만 가질 수 있다"는 규칙 자체를 두지 않음
+ 
+ ### 3.4 프로토타입 범위
+ - 캐릭터 1종 (티라노사우루스)으로 시작. 패시브 시스템은 2종 이상부터 비교 대상이 생기므로 버티컬 슬라이스(M3) 단계에서 추가
+@@ -83,64 +83,73 @@
+ 
+ ### 4.2 스킬 목록 (가칭, 프로토타입용 8종)
+ 
+-| 스킬명 | 종족 모티브 | 구분 | 무기 아키타입 | 효과 초안 |
++| 스킬명 | 종족 모티브 | 구분 | 태그 | 효과 초안 |
+ |---|---|---|---|---|
+-| 물기 | 티라노사우루스 | **고유 액티브** | 근접/흡입형 | 물면 근처 몹을 끌어당겨 씹음 (좁은 물기 → 광역 흡입으로 반전) |
+-| 박치기 돌진 | 파키케팔로사우루스 | 공용 액티브 | 대시/돌진형 | 일직선 돌진, 관통 데미지 + 넉백 |
+-| 골판 두르기 | 스테고사우루스 | 공용 액티브 | 오빗형 (지속) | 몸 주변 회전하며 지속 데미지 |
+-| 철퇴 | 안킬로사우루스 | 공용 액티브 | 근접 광역형 | 느림, 강한 한방 + 강한 넉백 |
+-| 새끼낳기 | 마이아사우라 | 공용 액티브 | 소환형 | 새끼 소환, 자동 근접 전투 (LoL 요릭 구울 참고) |
+-| 음파 | 파라사우롤로푸스 | 공용 액티브 | 버스트형 (순간) | 주기적으로 광역 충격파 발생 |
+-| 긴 목 | 브라키오사우루스 | 공용 **패시브** | 유틸형 | 아이템/경험치 수집 범위 증가 |
+-| 손톱 미사일 | 테리지노사우루스 | 공용 액티브 | 원거리 관통형 (단일 궤도) | 손톱이 빠져나가 일직선 관통 발사 |
+-| 산탄 | 딜로포사우루스 | 공용 액티브 | 원거리 확산형 (샷건) | 볏이 탄창처럼 부채꼴로 다수 발사. *"딜로포사우루스의 볏은 탄창 겸 가늠자였다고 합니다. 뭐, 그랬을 수도 있잖아요?"* |
+-
+-**아키타입 분산 체크**: 근접(철퇴)·오빗(골판)·돌진(박치기)·소환(새끼)·버스트(음파)·원거리 관통(손톱)·흡입(물기)·패시브(긴목) — 겹침 없이 고르게 분산됨.
++| 물기 | 티라노사우루스 | 공용 액티브 (**티라노 시작 스킬**) | `suction` | 물면 근처 몹을 끌어당겨 씹음 (좁은 물기 → 광역 흡입으로 반전) |
++| 박치기 돌진 | 파키케팔로사우루스 | 공용 액티브 | `dash` | 일직선 돌진, 관통 데미지 + 넉백 |
++| 골판 두르기 | 스테고사우루스 | 공용 액티브 | `orbit` | 몸 주변 회전하며 지속 데미지 |
++| 철퇴 | 안킬로사우루스 | 공용 액티브 | `melee` | 느림, 강한 한방 + 강한 넉백 |
++| 새끼낳기 | 마이아사우라 | 공용 액티브 | `summon` | 새끼 소환, 자동 근접 전투 (LoL 요릭 구울 참고) |
++| 음파 | 파라사우롤로푸스 | 공용 액티브 | `burst` | 주기적으로 광역 충격파 발생 |
++| 긴 목 | 브라키오사우루스 | 공용 **패시브** | `passive` | 아이템/경험치 수집 범위 증가 |
++| 손톱 미사일 | 테리지노사우루스 | 공용 액티브 | `ranged_pierce` | 손톱이 빠져나가 일직선 관통 발사 |
++| 산탄 | 딜로포사우루스 | 공용 액티브 | `ranged_spread` | 볏이 탄창처럼 부채꼴로 다수 발사. *"딜로포사우루스의 볏은 탄창 겸 가늠자였다고 합니다. 뭐, 그랬을 수도 있잖아요?"* |
++
++**태그 체계 (4.3.1 참고)**: 표의 태그는 스킬당 하나지만, 데이터 스키마상으로는 스킬 하나가 여러 태그를 동시에 가질 수 있음 (예: 소환수가 투사체를 쏘면 `summon`+`projectile`). 지금은 변주 체크용으로 한 개씩만 부여했지만, 이후 "태그 대상 버프"(예: 소환수 강화)의 타겟팅 키로 그대로 재사용.
++
++**변주 체크**: 근접(철퇴)·오빗(골판)·돌진(박치기)·소환(새끼)·버스트(음파)·원거리 관통(손톱)·원거리 확산(산탄)·흡입(물기)·패시브(긴목) — 겹침 없이 고르게 분산됨.
+ 
+ **주의**: 골판 두르기(지속형)와 음파(순간 버스트형)는 둘 다 "몸 주변 광역"이라 컨셉이 비슷해 보이지만, 지속 딜 vs 스파이크 딜로 역할을 분리해 차별화.
+ 
+ ### 4.3 성장 & 진화 구조
+ 
+ ```
+-Lv.1 ─ Lv.2 ─ Lv.3 ─ Lv.4 ─ Lv.MAX
+-                                │
+-                          ① 각성 (개별 만렙 보상, 단독 강화)
+-                                │
+-                     [합체 조건 충족 시]
+-                                │
+-                          ② 합체진화 (신규 궁극 스킬로 대체)
++Lv.1 ── Lv.2 ── Lv.3 ── Lv.4 ── Lv.5(만렙)
++         수치↑   특징적   수치↑     │
++                 강화              ① 진화 (자동 발동, 신규 형태로 대체)
++                                    │
++                         [합체 조건 충족 시]
++                                    │
++                              ② 합체 (진화 스킬 여러 개 → 궁극 스킬 하나)
+ ```
+ 
+-- **만렙 기준**: 5레벨 이내 권장 (짧은 런 안에 도달 가능해야 함)
+-- **각성**: 스킬이 만렙에 도달하면 파트너 유무와 무관하게 자체 강화 발동 (수치+비주얼 변화)
+-- **합체 조건**: **재료 스킬 둘 다 만렙**이어야 합체 가능 (클라이맥스 지향으로 확정. 튜닝 난이도 있음 — 4.4 참고)
++- **레벨업 원칙**: Lv2·Lv4는 수치 증가만 (비주얼/동작 변화 없음). Lv3은 **특징적 강화** — 수치가 아니라 스킬의 동작 자체가 바뀌는 지점 (예: 물기가 Lv3부터 광역 흡입으로 반전). 스킬마다 구체 내용은 개별 설계 필요 (8장 Open Question)
++- **만렙 기준**: 5레벨 (짧은 런 안에 도달 가능해야 함)
++- **진화**: 스킬이 Lv5(만렙)에 도달하면 **자동으로** 새로운 "진화형" 스킬로 교체됨 (트리거 아이템 불필요 — 트리거 아이템은 4.5의 "합체"에만 사용). 각성처럼 원래 스킬 자리에서 수치만 오르는 게 아니라, 별도의 진화형 SkillData로 완전히 대체
++- **진화 스킬의 레벨 규칙**: 진화형 스킬은 **만렙 = Lv1**로 판정. 즉 진화가 곧 그 계열의 최종 상태이며, 진화 후 추가 레벨업은 없음
++- **합체 조건**: 합체 레시피에 등록된 재료가 **전부 진화를 마친 상태**(=각자 만렙인 Lv1 진화형)일 것. 진화 스킬의 만렙이 1이므로 실질적으로 "재료를 전부 진화시켰는가"와 동일한 조건 (클라이맥스 지향 유지. 튜닝 난이도 있음 — 4.4 참고)
+ 
+-#### 합체 레이어 2종
++#### 4.3.1 태그 시스템
++- 스킬은 `SkillData.tags: Array[StringName]`로 다중 분류됨 (예: `melee`, `summon`, `projectile`, `bomb`). 4.2 표의 값은 변주 체크용으로 하나씩만 부여했지만, 스킬 하나가 여러 태그를 동시에 가질 수 있는 구조
++- **용도**: (1) 신규 스킬 추가 시 기존 아키타입과 안 겹치는지 변주 체크, (2) 향후 태그를 겨냥한 버프의 타겟팅 키 (예: "소환수 강화" 효과가 `summon` 태그를 가진 스킬 전체에 적용)
++- 진화/합체로 스킬이 교체될 때 태그도 새로 부여됨 — 진화형이 원본과 다른 정체성을 가지면(예: 근접형이 진화하며 광역형이 되는 경우) 태그도 그에 맞게 갈아낌
+ 
+-| 레이어 | 재료 | 결과물 |
+-|---|---|---|
+-| 공용 합체 | 풀 스킬 + 풀 스킬 | 캐릭터 무관 동일 결과물 |
+-| 고유 합체 | 고유 액티브 + 풀 스킬 | **캐릭터마다 결과물 다름** (고유 액티브를 계속 보유해야 성립) |
++#### 합체 재료 구조
++- **재료 개수**: 기본 2개. 특정 레시피는 예외적으로 3개까지 허용 — `FusionRecipe.ingredients`가 배열이라 스키마 변경 없이 지원
++- **레이어**: 단일 레이어로 통합. 과거에는 "공용 합체(풀+풀)"와 "고유 합체(고유 액티브+풀)"를 구분했지만, 3.3에서 배타적 시작 스킬 개념을 없앤 이상 그 구분은 의미가 없어져 폐지 — 재료 출처와 무관하게 레시피만 맞으면 동일하게 합체
++- **결과**: 재료로 쓰인 진화 스킬 전부가 보유 목록에서 사라지고, 합체 결과 스킬 하나만 슬롯에 남음
++- **레시피**: 구체 조합은 미정이나, `FusionRecipe`(재료 N개 + 결과물 1개) 리소스로 시스템은 이미 구현되어 있어야 함
+ 
+-**프로토타입 확정 조합**: `새끼낳기 + 음파` → (가칭) "새끼들의 대합창" — 소환형+버스트형으로 아키타입이 겹치지 않아 합쳐졌을 때 완전히 새로운 패턴이 나옴. 서사적으로도 마이아사우라(모성 습성)와 파라사우롤로푸스(울음소리)가 자연스럽게 연결됨.
++**프로토타입 확정 조합**: `새끼낳기 진화형 + 음파 진화형` → (가칭) "새끼들의 대합창" — 소환형+버스트형으로 태그가 겹치지 않아 합쳐졌을 때 완전히 새로운 패턴이 나옴. 서사적으로도 마이아사우라(모성 습성)와 파라사우롤로푸스(울음소리)가 자연스럽게 연결됨.
+ 
+-### 4.4 밸런싱 고려사항 (둘 다 만렙 조건에 따른 리스크)
+-- 웨이브형 런(15~20분) 안에서 스킬 2개를 모두 만렙까지 찍으려면 아래 장치가 사실상 필수:
++### 4.4 밸런싱 고려사항 (재료 전부 진화 조건에 따른 리스크)
++- 웨이브형 런(15~20분) 안에서 스킬 2개를 모두 진화(=만렙)까지 찍으려면 아래 장치가 사실상 필수:
+   1. **가중치(피티) 시스템**: 이미 보유한 스킬이 레벨업 선택지에 더 자주 등장 (보유 스킬 2~3배 가중 권장)
+   2. **슬롯 수 제한**: 6슬롯 — 슬롯이 늘어날수록 분산되어 만렙 달성이 어려워지므로 가중치를 더 세게 조정할 필요 있음
+   3. **진화 타이밍 목표**: 런 후반 70~80% 지점 (웨이브 난이도 스파이크와 겹치도록 설계 — "위기 때 터지는 한 방" 연출)
++  4. **주의**: 진화 스킬의 레벨 규칙(4.3, 만렙=Lv1)을 나중에 1보다 크게 바꾸면 이 리스크가 한 단계 더 누적되므로, 바꾸려면 위 장치들을 함께 더 세게 조정해야 함
+ 
+-### 4.5 진화 트리거 방식 (확정)
+-
+-**결정**: 트리거 아이템 획득 방식. 재료 스킬 둘 다 만렙인 상태에서 "진화 트리거 아이템"을 보유하면 즉시 합체진화 발동.
++### 4.5 진화·합체 트리거 방식 (확정)
+ 
+-- **아이템 획득 경로**: 정예 개체 처치 시 드랍 (몹 티어 시스템, 6.2 참고와 연동)
+-- 레벨업 화면에 별도 선택지를 끼워넣는 방식(구 옵션 A)이나 자동 발동(구 옵션 B) 대신, **"강한 적을 잡아야 다음 단계로 갈 수 있다"는 행동 목표**가 생기는 쪽을 선택
+-- **구현 순서**: 몹 티어/드랍테이블 인프라(G2)가 선행되어야 하므로, 실제 트리거→합체 연결 로직은 G6(합체진화 시스템)에서 구현
++- **개별 진화 (Lv5 도달 시)**: 자동 발동. 트리거 아이템 불필요 — 파트너 유무와 무관하게 만렙에 도달하는 즉시 진화형으로 교체
++- **합체**: 트리거 아이템 방식 유지. 재료가 **전부 진화를 마친 상태**에서 "합체 트리거 아이템"을 보유하면 즉시 합체 발동
++  - **아이템 획득 경로**: 정예 개체 처치 시 드랍 (몹 티어 시스템, 6.2 참고와 연동)
++  - 레벨업 화면에 별도 선택지를 끼워넣는 방식이나 자동 발동 대신, **"강한 적을 잡아야 다음 단계로 갈 수 있다"는 행동 목표**가 생기는 쪽을 선택
++  - **구현 순서**: 몹 티어/드랍테이블 인프라(G2)가 선행되어야 하므로, 실제 트리거→합체 연결 로직은 G6(합체 시스템)에서 구현
+ 
+ ### 4.6 장기 확장 옵션 (프로토타입 범위 밖, 참고용)
+-- 『볼X핏』형 다단계 연쇄 합체(1차 진화 결과물이 다시 2차 진화 재료가 되는 구조) 검토 가능
+-- 채택 시 데이터 구조를 "재료 리스트(N개) + 결과물"의 범용 레시피 형태로 설계해야 확장 용이
++- 『볼X핏』형 다단계 연쇄 합체(1차 합체 결과물이 다시 2차 합체 재료가 되는 구조) 검토 가능
++- 채택 시에도 데이터 구조는 이미 "재료 리스트(N개) + 결과물"의 범용 레시피 형태(`FusionRecipe`)라 그대로 재사용 가능
+ - 서사 단계 네이밍 예: 선조의 지혜 → 부족의 힘 → 태초의 힘
+ 
+ ---
+@@ -153,7 +162,7 @@ Lv.1 ─ Lv.2 ─ Lv.3 ─ Lv.4 ─ Lv.MAX
+ 
+ **개념**: 런이 끝날 때(사망/생존 무관) 형질 1개를 다음 런에 물려줄 수 있음. 파워가 누적되는 시스템이 아니라 **바통 터치** 구조 — 골드 기반 통합 강화가 이미 성장 축을 담당하므로, 유전은 순수하게 "정체성 로테이션" 역할만 수행.
+ 
+-- **선택 시점**: 런 시작 시, **기본 고유 액티브 vs 유전받은 액티브 중 택 1**
++- **선택 시점**: 런 시작 시, **기본 시작 스킬 vs 유전받은 액티브 중 택 1**
+ - **유전 슬롯**: 항상 1개만 유지, 누적되지 않음 (매 런 교체 가능)
+ - **범위**: 종족 무관 전체 공용 혈통 (티라노 런에서 얻은 형질을 스테고 런이 물려받을 수 있음 — "선조가 다른 종이었어도 지혜는 후손에게 전해진다")
+ - **서사적 정합성**: "유일한 생존자"인 아버지가 아니라, 그 유언을 이어받은 **후손**을 플레이어가 연기하는 구조이므로 멀티런과 스토리가 충돌하지 않음
+@@ -182,15 +191,15 @@ Lv.1 ─ Lv.2 ─ Lv.3 ─ Lv.4 ─ Lv.MAX
+ ```
+ [긴급탈출 버튼]
+   → 게임 일시정지
+-    → 반납할 액티브 1개 직접 선택 (고유 액티브 포함, 전부 대상)
++    → 반납할 액티브 1개 직접 선택 (시작 스킬 포함, 전부 대상)
+       → 화면 전체 몹 일격 클리어 (희생 스킬 레벨에 비례한 위력)
+         → 해당 슬롯 비워짐, 쿨타임 시작
+ ```
+ 
+ - **반납 스킬 선택**: 플레이어 직접 지정 (정지 화면이므로 실시간 계산 부담 없음)
+-- **대상 범위**: 고유 액티브 포함 모든 액티브 (종족 정체성보다 전략적 자유 우선 — 5.1, 4.2 슬롯 교체 원칙과 동일한 철학)
++- **대상 범위**: 시작 스킬 포함 모든 액티브 (종족 정체성보다 전략적 자유 우선 — 5.1, 4.2 슬롯 교체 원칙과 동일한 철학)
+ - **남용 방지**: 쿨타임 (구체 수치는 프로토타입 실측 튜닝)
+-- **트레이드오프**: 고유 액티브를 탈피시키면 해당 런에서 "고유 합체"(4.3 참고) 접근권을 상실 — 의도된 긴장감
++- **트레이드오프**: 진화·합체까지 키워온 스킬을 반납하면 그 투자를 그대로 잃음 (시작 스킬이라고 예외를 두지 않음 — 의도된 긴장감)
+ - **연출 방향**: 허물을 벗으며 터지는 이미지 (테마 정합성)
+ 
+ ### 5.4 세 시스템의 관계
+@@ -244,7 +253,7 @@ Lv.1 ─ Lv.2 ─ Lv.3 ─ Lv.4 ─ Lv.MAX
+ - **획득 방식**: 생존 시간 비례 (구체 수치 미정)
+ - **보너스 구성 2단**:
+   - 매 레벨: **기초 스탯만** 소폭 성장 (체력/공격력/방어력 — 세부 스탯인 쿨감·치명타 등은 제외)
+-  - **마일스톤(N레벨마다)**: 고유 액티브/패시브를 직접 강화 (예: "물기 데미지 +15%"). 간격은 3레벨/5레벨 중 미정, 프로토타입 이후 결정
++  - **마일스톤(N레벨마다)**: 시작 스킬/패시브를 직접 강화 (예: "물기 데미지 +15%"). 간격은 3레벨/5레벨 중 미정, 프로토타입 이후 결정
+ 
+ ### 6.4 스탯 체계
+ 
+@@ -269,10 +278,10 @@ Lv.1 ─ Lv.2 ─ Lv.3 ─ Lv.4 ─ Lv.MAX
+ - ✅ 플레이어 이동
+ - ✅ 몹 티어/단계 스포너 (6.1) — 일반/정예/보스 구현
+ - ✅ 드랍 테이블 (6.2) — 경험치/골드 확률 드랍 구현
+-- ✅ 자동공격 (티라노 고유 액티브: 물기) — 데이터 기반 스킬 로직 구조로 구현
++- ✅ 자동공격 (티라노 시작 스킬: 물기) — 데이터 기반 스킬 로직 구조로 구현
+ - ⬜ 경험치 획득 → 레벨업 → 스킬 선택지 3개 제시 (가중치 적용) — 다음 단계(G4)
+ - ⬜ 스킬 풀 9종 구현 (물기만 완료, 나머지 8종 대기)
+-- ⬜ 합체진화 1쌍 구현 (새끼낳기 + 음파) — 진화 트리거 아이템 연결 포함
++- ⬜ 합체 1쌍 구현 (새끼낳기 + 음파, 각각 진화 완료 후) — 합체 트리거 아이템 연결 포함
+ - ⬜ 탈피(긴급탈출) 시스템 — 독립 버튼, 스킬 반납 선택 UI, 화면 클리어, 쿨타임
+ - ⬜ 사망 조건
+ 
+@@ -290,7 +299,7 @@ Lv.1 ─ Lv.2 ─ Lv.3 ─ Lv.4 ─ Lv.MAX
+ ## 8. 미해결 사항 (Open Questions)
+ 
+ 1. 합체 시 원본 스킬 소모 방식: 슬롯에서 완전히 사라지고 대체되는지, 재료가 유지되는지
+-2. 향후 2번째 종족 추가 시 고유 액티브를 어떻게 설계할지 (밸런스 기준점 필요)
++2. 향후 2번째 종족 추가 시 시작 스킬을 어떻게 배정할지 (밸런스 기준점 필요 — 배타성이 없으므로 "겹쳐도 되는지"도 함께 결정)
+ 3. 플레이버 텍스트 보이스 템플릿(4.1.1)을 나머지 스킬 8종에도 일괄 적용하는 카피라이팅 작업 필요
+ 4. 탈피 쿨타임 수치, 최소 보유 액티브 제한(전부 반납 방지) — 프로토타입 실측 튜닝 필요
+ 5. 스탠스 전환용 기믹 장소를 M2(프로토타입)에 일부 넣을지, M3(버티컬 슬라이스)로 완전히 미룰지
+@@ -299,12 +308,16 @@ Lv.1 ─ Lv.2 ─ Lv.3 ─ Lv.4 ─ Lv.MAX
+ 8. MetaUpgrades 비용 곡선 실제 값 (`cost_base`/`cost_growth`는 엑셀상 가안)
+ 9. 스탯 중첩 규칙(`additive_percent` 통일) 최종 확정 — 현재는 제안 상태
+ 10. 나머지 스킬 8종의 정확한 수치(데미지/쿨다운/범위) — `공룡_뱀서라이크_기획데이터.xlsx`의 Skills 시트에서 관리
++11. 스킬별 Lv3 "특징적 강화"의 구체 내용 (스킬 9종 각각 무엇이 바뀌는지) — 미정
++12. 태그 목록(`melee`/`summon`/`projectile`/`bomb` 등) 전체 확정 및 명명 규칙 — 지금은 예시 수준
++13. 태그 대상 버프(예: "소환수 강화")의 실제 발생 경로(레벨업 카드/메타 강화/숙련도 중 어디서 나올지) — 아직 소비처 없음, 스키마만 준비된 상태
++14. `공룡_뱀서라이크_기획데이터.xlsx`의 Skills 시트에서 `archetype`/`is_unique_active` 컬럼을 `tags`(다중값)로 교체 반영 필요
+ 
+ ---
+ 
+ # 부록: Godot 프로토타입 개발 마일스톤
+ 
+-> 목표: "이동하고 때리는 게 재밌나 + 합체진화가 재밌나"를 최소 비용으로 검증
++> 목표: "이동하고 때리는 게 재밌나 + 진화·합체가 재밌나"를 최소 비용으로 검증
+ > 대상: 2인 초보 팀, Godot 4.x 기준
+ > **팀 역량**: 메인 개발자 — 코딩 지식 있음, 게임개발 경험 없음 / 서브 개발자 — 게임 관련 지식 있음, 코딩 지식 거의 없음
+ 
+@@ -314,7 +327,7 @@ Godot은 에디터 안에서 코드 없이 처리 가능한 작업(씬/노드 
+ 
+ | 담당 | 역할 | 구체 작업 예시 |
+ |---|---|---|
+-| 메인 개발자 (코딩 O) | 시스템 로직 전담 | GDScript 작성: 이동, 스포너, 전투 판정, 스킬 베이스 클래스, 합체진화 로직 |
++| 메인 개발자 (코딩 O) | 시스템 로직 전담 | GDScript 작성: 이동, 스포너, 전투 판정, 스킬 베이스 클래스, 진화·합체 로직 |
+ | 서브 개발자 (게임지식 O, 코딩 X) | 콘텐츠 & 데이터 & QA | 스킬 수치를 Resource(.tres)에 입력, 웨이브 난이도 커브 값 조정, UI 레이아웃을 에디터에서 배치, 지속적 플레이테스트 및 재미 피드백, 밸런스 수치 제안 |
+ 
+ **핵심 팁**: 메인 개발자가 스킬/몹 데이터를 코드에 하드코딩하지 않고 처음부터 Godot의 `Resource`(커스텀 데이터 리소스)로 분리해서 설계하면, 서브 개발자가 코드를 몰라도 에디터에서 숫자만 조정하며 직접 튜닝에 참여할 수 있습니다. (예: 스킬 데미지, 쿨다운, 웨이브 스폰 간격 등을 Inspector 창에서 직접 수정)
+@@ -353,7 +366,7 @@ Godot은 에디터 안에서 코드 없이 처리 가능한 작업(씬/노드 
+ - **[메인]** 레벨업 시 게임 일시정지 + 3택 UI 팝업 로직
+ - **[메인]** 가중치 기반 랜덤 선택지 로직 (보유 스킬 우선 노출)
+ - **[서브]** UI 레이아웃을 에디터에서 배치 (버튼 위치, 텍스트, 아이콘 자리 등 — Godot의 Control 노드는 코드 없이도 상당 부분 구성 가능)
+-- **[메인]** 스킬 레벨업 적용 로직 (만렙 도달 시 각성 효과 트리거)
++- **[메인]** 스킬 레벨업 적용 로직 (Lv3 특징적 강화, Lv5 만렙 도달 시 진화 트리거)
+ - **[메인]** `StatModifierData` 리소스 + 스탯 계산기 구현 (6.4) — 종족 패시브가 텍스트가 아닌 실제 수치로 적용되도록 연결
+ 
+ ## G5. 나머지 스킬 7종 구현 (7~10일)
+@@ -361,10 +374,10 @@ Godot은 에디터 안에서 코드 없이 처리 가능한 작업(씬/노드 
+ - **[메인]** 스킬마다 최소 기능만 구현 (이펙트/애니메이션은 도형으로 대체, 로직 검증 우선)
+ - **[서브]** 스킬 8개 각각의 수치를 Resource로 입력, 서로 다른 아키타입 간 체감 밸런스 피드백 (예: "철퇴가 너무 느려서 안 씀직하다")
+ 
+-## G6. 합체진화 시스템 (4~6일)
++## G6. 합체 시스템 (4~6일)
+ - **[메인]** G4.5에서 결정한 트리거 방식에 따라 구현
+ - **[메인]** 재료 스킬 2개 만렙 감지 → 합체 조건 성립 판정
+-- **[메인]** 합체진화 결과 스킬(새끼들의 대합창) 구현 및 슬롯 대체 로직
++- **[메인]** 합체 결과 스킬(새끼들의 대합창) 구현 및 슬롯 대체 로직
+ - **[서브]** 합체 발생 시 연출(이펙트/텍스트) 아이디어 제안, 실제 발동 타이밍이 "터지는 느낌"이 나는지 플레이 피드백
+ 
+ ## G6.5. 탈피 (긴급탈출) 시스템 (3~5일)
+diff --git a/dino-survivor-develop/README.md b/dino-survivor-develop/README.md
+index 682927f..1421ed9 100644
+--- a/dino-survivor-develop/README.md
++++ b/dino-survivor-develop/README.md
+@@ -39,7 +39,7 @@ DinoSurvivorsPrototype/
+ │   ├── species/                # 종족 하나당 파일 하나 (예: trex.tres)
+ │   ├── enemies/                # 몹 "단계" 하나당 파일 하나 (티어+stage로 구분)
+ │   ├── loot_tables/             # 드랍 테이블 (몹 여러 개가 같은 테이블 공유 가능)
+-│   └── fusion_recipes/          # 합체진화 레시피 (아직 비어있음, G6에서 사용)
++│   └── fusion_recipes/          # 합체 레시피 (아직 비어있음, G6에서 사용)
+ ├── resource_types/          # 위 data/ 파일들의 "틀"(스키마) 정의 — 거의 안 바뀜
+ │   ├── skill_data.gd
+ │   ├── species_data.gd
+diff --git a/dino-survivor-develop/autoload/skill_database.gd b/dino-survivor-develop/autoload/skill_database.gd
+index 0810107..a6846e4 100644
+--- a/dino-survivor-develop/autoload/skill_database.gd
++++ b/dino-survivor-develop/autoload/skill_database.gd
+@@ -26,5 +26,6 @@ func get_skill(id: StringName) -> SkillData:
+ 			return skill
+ 	return null
+ 
++## 모든 스킬이 공용 풀에 포함됨 (시작 스킬도 예외 없음, 기획서 3.3)
+ func get_common_pool_skills() -> Array[SkillData]:
+-	return all_skills.filter(func(s): return not s.is_unique_active)
++	return all_skills
+diff --git a/dino-survivor-develop/data/skills/bite.tres b/dino-survivor-develop/data/skills/bite.tres
+index 0660450..b2b2a8b 100644
+--- a/dino-survivor-develop/data/skills/bite.tres
++++ b/dino-survivor-develop/data/skills/bite.tres
+@@ -10,8 +10,7 @@ id = &"bite"
+ display_name = "물기"
+ species_motif = "티라노사우루스"
+ flavor_text = "티라노사우루스의 악력은 육상 동물 역대급이었다고 합니다. 근데 그 정도면 씹는 게 아니라 흡입 아닌가요? 한 입에 (데미지_숫자)의 피해를 입힙니다."
+-archetype = 7
+-is_unique_active = true
++tags = Array[StringName](["suction"])
+ base_damage = 15.0
+ cooldown = 0.8
+ effect_scene = ExtResource("3")
+diff --git a/dino-survivor-develop/data/skills/dummy_fire_bolt.tres b/dino-survivor-develop/data/skills/dummy_fire_bolt.tres
+index ec24139..60702e9 100644
+--- a/dino-survivor-develop/data/skills/dummy_fire_bolt.tres
++++ b/dino-survivor-develop/data/skills/dummy_fire_bolt.tres
+@@ -7,5 +7,5 @@ script = ExtResource("1")
+ id = &"dummy_fire_bolt"
+ display_name = "파이어 볼트 (Dummy)"
+ flavor_text = "테스트용 더미 스킬. 실제 동작은 구현되어 있지 않습니다."
+-archetype = 5
++tags = Array[StringName](["ranged_pierce"])
+ icon_color = Color(0.95, 0.3, 0.1, 1)
+diff --git a/dino-survivor-develop/data/skills/dummy_ice_shield.tres b/dino-survivor-develop/data/skills/dummy_ice_shield.tres
+index 2f2c41f..b195b38 100644
+--- a/dino-survivor-develop/data/skills/dummy_ice_shield.tres
++++ b/dino-survivor-develop/data/skills/dummy_ice_shield.tres
+@@ -8,8 +8,7 @@ id = &"dummy_ice_shield"
+ display_name = "아이스 실드 (Dummy)"
+ species_motif = ""
+ flavor_text = "테스트용 더미 스킬. 실제 동작은 구현되어 있지 않습니다."
+-archetype = 8
+-is_unique_active = false
++tags = Array[StringName](["passive"])
+ base_damage = 10.0
+ cooldown = 1.0
+ max_level = 5
+diff --git a/dino-survivor-develop/data/skills/dummy_speed_boost.tres b/dino-survivor-develop/data/skills/dummy_speed_boost.tres
+index 76c1a93..02e8c60 100644
+--- a/dino-survivor-develop/data/skills/dummy_speed_boost.tres
++++ b/dino-survivor-develop/data/skills/dummy_speed_boost.tres
+@@ -8,8 +8,7 @@ id = &"dummy_speed_boost"
+ display_name = "스피드 부스트 (Dummy)"
+ species_motif = ""
+ flavor_text = "테스트용 더미 스킬. 실제 동작은 구현되어 있지 않습니다."
+-archetype = 8
+-is_unique_active = false
++tags = Array[StringName](["passive"])
+ base_damage = 10.0
+ cooldown = 1.0
+ max_level = 5
+diff --git a/dino-survivor-develop/data/skills/dummy_thunder_bolt.tres b/dino-survivor-develop/data/skills/dummy_thunder_bolt.tres
+index 2270f57..3dfb28f 100644
+--- a/dino-survivor-develop/data/skills/dummy_thunder_bolt.tres
++++ b/dino-survivor-develop/data/skills/dummy_thunder_bolt.tres
+@@ -7,5 +7,5 @@ script = ExtResource("1")
+ id = &"dummy_thunder_bolt"
+ display_name = "썬더 볼트 (Dummy)"
+ flavor_text = "테스트용 더미 스킬. 실제 동작은 구현되어 있지 않습니다."
+-archetype = 5
++tags = Array[StringName](["ranged_pierce"])
+ icon_color = Color(0.7993413, 0.9057268, 1.540184e-06, 1)
+diff --git a/dino-survivor-develop/data/skills/mace.tres b/dino-survivor-develop/data/skills/mace.tres
+index e1a4440..628a8d9 100644
+--- a/dino-survivor-develop/data/skills/mace.tres
++++ b/dino-survivor-develop/data/skills/mace.tres
+@@ -10,6 +10,7 @@ id = &"mace"
+ display_name = "철퇴"
+ species_motif = "안킬로사우루스"
+ flavor_text = "휘두르는 데 0.4초, 그 안에 있던 모든 것이 후회하는 데는 0초. 충격과 함께 (데미지_숫자)의 피해를 줍니다."
++tags = Array[StringName](["melee"])
+ cooldown = 5.0
+ effect_scene = ExtResource("3")
+ logic_scene = ExtResource("2")
+diff --git a/dino-survivor-develop/data/skills/orbit_blade.tres b/dino-survivor-develop/data/skills/orbit_blade.tres
+index 4817358..f3ce26e 100644
+--- a/dino-survivor-develop/data/skills/orbit_blade.tres
++++ b/dino-survivor-develop/data/skills/orbit_blade.tres
+@@ -9,7 +9,7 @@ id = &"orbit_blade"
+ display_name = "골판 두르기"
+ species_motif = "스테고사우루스"
+ flavor_text = "스테고사우루스의 골판에 베인다고 상상해보세요. 골판이 뭉툭하다는 상상력 없는 말은 하지 마세요!"
+-archetype = 1
++tags = Array[StringName](["orbit"])
+ base_damage = 4.0
+ cooldown = 0.4
+ logic_scene = ExtResource("2")
+diff --git a/dino-survivor-develop/data/species/trex.tres b/dino-survivor-develop/data/species/trex.tres
+index 2f5e878..0af34ab 100644
+--- a/dino-survivor-develop/data/species/trex.tres
++++ b/dino-survivor-develop/data/species/trex.tres
+@@ -22,4 +22,4 @@ id = &"trex"
+ display_name = "티라노사우루스"
+ passive_flavor_text = "공격력 +10%, 이동속도 -5%"
+ passive_modifiers = Array[ExtResource("3")]([SubResource("StatModifier_dmg"), SubResource("StatModifier_speed")])
+-unique_active = ExtResource("2")
++starting_skill = ExtResource("2")
+diff --git a/dino-survivor-develop/resource_types/fusion_recipe.gd b/dino-survivor-develop/resource_types/fusion_recipe.gd
+index f4614b4..5747ea0 100644
+--- a/dino-survivor-develop/resource_types/fusion_recipe.gd
++++ b/dino-survivor-develop/resource_types/fusion_recipe.gd
+@@ -1,12 +1,13 @@
+ class_name FusionRecipe
+ extends Resource
+-## 합체진화 레시피: 재료 N개 + 결과물 1개.
++## 합체 레시피: 재료 N개 + 결과물 1개.
+ ##
+-## 지금은 페어형(재료 2개)만 쓰지만, ingredients를 배열로 설계해뒀기 때문에
+-## 나중에 볼X핏형 다단계 체인(재료 여러 개, 또는 이전 결과물이 다시 재료가 되는 구조)으로
++## 기본은 재료 2개지만, ingredients를 배열로 설계해뒀기 때문에
++## 예외적으로 3개 이상 요구하는 레시피도 스키마 변경 없이 추가할 수 있고,
++## 나중에 볼X핏형 다단계 체인(이전 합체 결과물이 다시 재료가 되는 구조)으로
+ ## 확장하고 싶어져도 이 스키마를 그대로 재사용할 수 있습니다. (기획서 4.6 참고)
+ 
+ @export var id: StringName
+ @export var ingredients: Array[SkillData] = []
+-@export var require_all_max_level: bool = true  ## 기획서 4.3: 재료 전부 만렙이어야 합체 (클라이맥스 지향)
++@export var require_all_evolved: bool = true  ## 기획서 4.3: 재료가 전부 진화(만렙=Lv1인 진화형 상태)를 마쳐야 합체 (클라이맥스 지향)
+ @export var result: SkillData
+diff --git a/dino-survivor-develop/resource_types/mastery_milestone_data.gd b/dino-survivor-develop/resource_types/mastery_milestone_data.gd
+index 52cd6aa..75f92cb 100644
+--- a/dino-survivor-develop/resource_types/mastery_milestone_data.gd
++++ b/dino-survivor-develop/resource_types/mastery_milestone_data.gd
+@@ -1,6 +1,6 @@
+ class_name MasteryMilestoneData
+ extends Resource
+-## 숙련도 N레벨마다(간격 미정 — 기획서 8장) 고유 액티브/패시브를 직접 강화.
++## 숙련도 N레벨마다(간격 미정 — 기획서 8장) 시작 스킬/패시브를 직접 강화.
+ ## 엑셀 MasteryMilestones 시트와 1:1 대응.
+ ##
+ ## target 표기 규칙: 점(.)이 있으면 "스킬id.수치필드" (예: "bite.base_damage"),
+diff --git a/dino-survivor-develop/resource_types/skill_data.gd b/dino-survivor-develop/resource_types/skill_data.gd
+index 80eff7b..e9e6f0d 100644
+--- a/dino-survivor-develop/resource_types/skill_data.gd
++++ b/dino-survivor-develop/resource_types/skill_data.gd
+@@ -5,18 +5,6 @@ extends Resource
+ ## 이 스키마를 기반으로 data/skills/ 안에 새 .tres 파일만 만들면 됩니다.
+ ## (Godot 에디터에서 우클릭 > New Resource > SkillData 로 생성 가능)
+ 
+-enum Archetype {
+-	MELEE,          ## 근접 (예: 철퇴)
+-	ORBIT,          ## 몸 주변 회전 (예: 골판 두르기)
+-	DASH,           ## 돌진 (예: 박치기)
+-	SUMMON,         ## 소환 (예: 새끼낳기)
+-	BURST,          ## 주기적 광역 (예: 음파)
+-	RANGED_PIERCE,  ## 원거리 관통 (예: 손톱 미사일)
+-	RANGED_SPREAD,  ## 원거리 확산 (예: 산탄)
+-	SUCTION,        ## 흡입형 (예: 물기)
+-	PASSIVE,        ## 패시브 (예: 긴 목)
+-}
+-
+ enum Stance { QUADRUPED, BIPED, BOTH }
+ 
+ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문자열을 적어두면 description()이 base_damage로 치환
+@@ -27,14 +15,13 @@ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문
+ @export_multiline var flavor_text: String  ## 플레이버 텍스트 보이스 공식 적용 (기획서 4.1.1). DAMAGE_PLACEHOLDER를 넣어두면 카드에 실제 데미지가 채워짐
+ 
+ @export_group("분류")
+-@export var archetype: Archetype = Archetype.MELEE
+-@export var is_unique_active: bool = false  ## true면 공용 풀에 노출 안 됨 (특정 종족 전용)
++@export var tags: Array[StringName] = []  ## 자유 태그 (예: "melee", "summon", "projectile", "bomb"). 스킬 변주 체크와 향후 태그 기반 버프("소환수 강화" 등)에 공용으로 사용
+ @export var preferred_stance: Stance = Stance.BOTH
+ 
+ @export_group("수치")
+ @export var base_damage: float = 10.0
+ @export var cooldown: float = 1.0
+-@export var max_level: int = 5  ## 각성(만렙) 기준
++@export var max_level: int = 5  ## 진화(만렙) 기준 (기획서 4.3)
+ 
+ @export_group("씬 참조")
+ @export var effect_scene: PackedScene  ## 투사체/이펙트 씬 (있는 경우)
+diff --git a/dino-survivor-develop/resource_types/species_data.gd b/dino-survivor-develop/resource_types/species_data.gd
+index 97cf267..f583bd4 100644
+--- a/dino-survivor-develop/resource_types/species_data.gd
++++ b/dino-survivor-develop/resource_types/species_data.gd
+@@ -7,7 +7,7 @@ extends Resource
+ @export var display_name: String
+ @export_multiline var passive_flavor_text: String  ## 사람이 읽는 설명 (UI 표시용)
+ @export var passive_modifiers: Array[StatModifierData] = []  ## 실제 계산에 쓰이는 구조화된 효과 (기획서 6.4)
+-@export var unique_active: SkillData               ## 고유 액티브 (기획서 3.1)
++@export var starting_skill: SkillData               ## 시작 스킬 (기획서 3.1). 공용 풀에도 그대로 포함됨 — 배타적 소유가 아니라 초기 장착일 뿐
+ @export var default_stance: SkillData.Stance = SkillData.Stance.BIPED  ## 기획서 5.2
+ 
+ @export_group("비주얼")
+diff --git a/dino-survivor-develop/scripts/systems/skills/bite_skill.gd b/dino-survivor-develop/scripts/systems/skills/bite_skill.gd
+index 4bd8eb6..5d65975 100644
+--- a/dino-survivor-develop/scripts/systems/skills/bite_skill.gd
++++ b/dino-survivor-develop/scripts/systems/skills/bite_skill.gd
+@@ -1,5 +1,5 @@
+ extends SkillInstanceBase
+-## 물기 (기획서 4.2: 근접/흡입형, 티라노 고유 액티브)
++## 물기 (기획서 4.2: 근접/흡입형, 티라노 시작 스킬)
+ ## 사거리 내 가장 가까운 몹 하나를 찾아 데미지를 입힙니다.
+ ## 지금은 즉시 데미지만 처리. "흡입" 연출(끌어당기기)은 이후 폴리싱 단계에서 추가 예정.
+ 
+diff --git "a/dino-survivor-develop/\355\217\264\353\215\224_\352\264\200\353\246\254_\352\260\200\354\235\264\353\223\234.md" "b/dino-survivor-develop/\355\217\264\353\215\224_\352\264\200\353\246\254_\352\260\200\354\235\264\353\223\234.md"
+index 7910bd3..87ca2f1 100644
+--- "a/dino-survivor-develop/\355\217\264\353\215\224_\352\264\200\353\246\254_\352\260\200\354\235\264\353\223\234.md"
++++ "b/dino-survivor-develop/\355\217\264\353\215\224_\352\264\200\353\246\254_\352\260\200\354\235\264\353\223\234.md"
+@@ -54,7 +54,7 @@ Godot 프로젝트에서 초보자가 제일 많이 겪는 사고입니다.
+ ## 5. 지금 이 프로젝트에 실제로 적용된 예시
+ 
+ - `data/skills/bite.tres` — "물기" 스킬 데이터. 이 파일 하나가 스킬 하나를 통째로 정의합니다. 서브 개발자가 이 파일을 Godot에서 열면(Inspector 창) 데미지, 쿨다운 등을 코드 없이 바로 조정 가능
+-- `data/species/trex.tres` — 티라노 종족 데이터. 위 `bite.tres`를 "고유 액티브"로 참조하고 있음 (파일끼리 서로 연결되는 방식)
++- `data/species/trex.tres` — 티라노 종족 데이터. 위 `bite.tres`를 "시작 스킬"로 참조하고 있음 (파일끼리 서로 연결되는 방식). 시작 스킬도 공용 스킬 풀에 그대로 포함되므로, 배타적으로 소유하는 게 아니라 초기 장착일 뿐입니다
+ - 새 스킬을 추가하고 싶다면: `resource_types/skill_data.gd`를 열 필요 없이, `data/skills/` 안에 `.tres` 파일 하나만 더 만들면 끝
+ 
+ 이 패턴이 앞으로 스킬 9종 → 수십 종, 종족 1종 → 여러 종으로 늘어날 때도 그대로 반복됩니다.
+-- 
+2.43.0
+
