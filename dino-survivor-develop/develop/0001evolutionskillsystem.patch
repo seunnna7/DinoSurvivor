@@ -1,0 +1,456 @@
+From 26f4c1f264be5c5ae5690f9e1ffe60cc18e5f0f5 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 18 Jul 2026 20:19:45 +0000
+Subject: [PATCH] =?UTF-8?q?=EC=A7=84=ED=99=94=20=EC=8A=A4=ED=82=AC=20?=
+ =?UTF-8?q?=EC=8B=9C=EC=8A=A4=ED=85=9C=20+=20=EC=A7=84=ED=99=94=20?=
+ =?UTF-8?q?=EC=84=A0=ED=83=9D=20UI=20=EC=B6=94=EA=B0=80?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- SkillData.evolutions: 베이스 스킬이 만렙(Lv5)에서 제시할 진화 옵션(1~3개) 배열 신설.
+  진화형도 SkillData를 재사용하되 data/skill_evolutions/ 별도 폴더에 보관, max_level=1,
+  SkillDatabase는 이 폴더를 스캔하지 않아 공용 풀에 섞이지 않음
+- RunState: evolution_ready/skill_removed 신호, has_pending_evolution 가드 추가
+- SkillController: acquire_skill()이 만렙+진화옵션 보유 시 evolution_ready emit,
+  evolve_skill() 신설 — 베이스 스킬을 슬롯에서 제거하고 고른 진화형으로 대체
+- scenes/ui/EvolutionChoiceUI.tscn + evolution_choice_ui.gd: SkillCard를 재사용해
+  진화 옵션 개수(1~3)만큼 카드를 동적 배치하는 선택 팝업, GameUI에 배치
+- level_up_ui.gd / skill_hud.gd: 레벨업→진화 연쇄 시 일시정지 유지, 슬롯 대체 시 HUD 갱신
+- 예시 콘텐츠: bite_evo_1(BiteEvo1, 강화된 물기 — 기존 로직 재사용해 바로 플레이 가능),
+  bite_evo_2(BiteEvo2, 포효 광역 디버프 컨셉 — 디버프 시스템 부재로 로직 없는 더미)
+- 기획서 4.3.2/4.3.3: 진화 데이터 관리 방식과 물기 진화 2종 예시 정리,
+  8장에 디버프 시스템 부재 등 Open Question 추가
+---
+ ...4_\352\270\260\355\232\215\354\204\234.md" | 21 +++++++--
+ dino-survivor-develop/autoload/run_state.gd   | 13 +++++
+ .../autoload/skill_database.gd                |  3 ++
+ .../autoload/tag_database.gd                  |  1 +
+ .../data/skill_evolutions/bite_evo_1.tres     | 19 ++++++++
+ .../data/skill_evolutions/bite_evo_2.tres     | 15 ++++++
+ dino-survivor-develop/data/skills/bite.tres   |  3 ++
+ .../resource_types/skill_data.gd              |  3 ++
+ .../scenes/ui/EvolutionChoiceUI.tscn          | 33 +++++++++++++
+ dino-survivor-develop/scenes/ui/GameUI.tscn   |  5 +-
+ .../scripts/systems/skill_controller.gd       | 22 ++++++++-
+ .../scripts/ui/evolution_choice_ui.gd         | 47 +++++++++++++++++++
+ .../scripts/ui/level_up_ui.gd                 |  5 +-
+ dino-survivor-develop/scripts/ui/skill_hud.gd |  6 +++
+ 14 files changed, 190 insertions(+), 6 deletions(-)
+ create mode 100644 dino-survivor-develop/data/skill_evolutions/bite_evo_1.tres
+ create mode 100644 dino-survivor-develop/data/skill_evolutions/bite_evo_2.tres
+ create mode 100644 dino-survivor-develop/scenes/ui/EvolutionChoiceUI.tscn
+ create mode 100644 dino-survivor-develop/scripts/ui/evolution_choice_ui.gd
+
+diff --git "a/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md" "b/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
+index 32b2843..86f925f 100644
+--- "a/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
++++ "b/dino-survivor-develop/DinoSurvivors_Workspace/00_\352\270\260\355\232\215/\352\263\265\353\243\241_\353\261\200\354\204\234\353\235\274\354\235\264\355\201\254_\352\270\260\355\232\215\354\204\234.md"
+@@ -116,7 +116,7 @@
+ ```
+ Lv.1 ── Lv.2 ── Lv.3 ── Lv.4 ── Lv.5(만렙)
+          수치↑   특징적   수치↑     │
+-                 강화              ① 진화 (자동 발동, 신규 형태로 대체)
++                 강화              ① 진화 선택 UI (옵션 1~3개 중 하나를 선택)
+                                     │
+                          [합체 조건 충족 시]
+                                     │
+@@ -125,10 +125,23 @@ Lv.1 ── Lv.2 ── Lv.3 ── Lv.4 ── Lv.5(만렙)
+ 
+ - **레벨업 원칙**: Lv2·Lv4는 수치 증가만 (비주얼/동작 변화 없음). Lv3은 **특징적 강화** — 수치가 아니라 스킬의 동작 자체가 바뀌는 지점 (예: 물기가 Lv3부터 광역 흡입으로 반전). 스킬마다 구체 내용은 개별 설계 필요 (8장 Open Question)
+ - **만렙 기준**: 5레벨 (짧은 런 안에 도달 가능해야 함)
+-- **진화**: 스킬이 Lv5(만렙)에 도달하면 **자동으로** 새로운 "진화형" 스킬로 교체됨 (트리거 아이템 불필요 — 트리거 아이템은 4.5의 "합체"에만 사용). 각성처럼 원래 스킬 자리에서 수치만 오르는 게 아니라, 별도의 진화형 SkillData로 완전히 대체
++- **진화**: 스킬이 Lv5(만렙)에 도달하면 **진화 선택 UI**가 뜸 (트리거 아이템 불필요 — 트리거 아이템은 4.5의 "합체"에만 사용). 각성처럼 원래 스킬 자리에서 수치만 오르는 게 아니라, 플레이어가 고른 진화형 SkillData로 슬롯이 완전히 대체됨
++- **진화 옵션 1~3개**: 베이스 스킬 하나가 진화형을 1개, 2개, 또는 3개까지 가질 수 있음. 옵션이 1개뿐이어도 자동 적용이 아니라 확인 차원의 선택 UI가 그대로 뜸 (일관된 UX)
+ - **진화 스킬의 레벨 규칙**: 진화형 스킬은 **만렙 = Lv1**로 판정. 즉 진화가 곧 그 계열의 최종 상태이며, 진화 후 추가 레벨업은 없음
+ - **합체 조건**: 합체 레시피에 등록된 재료가 **전부 진화를 마친 상태**(=각자 만렙인 Lv1 진화형)일 것. 진화 스킬의 만렙이 1이므로 실질적으로 "재료를 전부 진화시켰는가"와 동일한 조건 (클라이맥스 지향 유지. 튜닝 난이도 있음 — 4.4 참고)
+ 
++#### 4.3.2 진화 스킬 데이터 관리 & 진화 선택 UI
++- **데이터**: 진화형도 새 클래스가 아니라 그대로 `SkillData`를 재사용 — 단, `data/skill_evolutions/`라는 별도 폴더에 보관하고 `max_level = 1`로 설정. `SkillDatabase`는 `data/skills/`만 스캔하므로 진화형은 레벨업 카드의 공용 풀에 절대 섞이지 않음 (일반 스킬과 "다르게 관리"하고 싶다는 요구사항을 폴더 분리 + 스캔 제외로 충족)
++- **연결**: 베이스 스킬의 `SkillData.evolutions: Array[SkillData]`가 그 스킬의 진화 옵션들을 직접 가리킴 (`FusionRecipe`처럼 별도 레시피 리소스를 두지 않고, 베이스 스킬 자신이 옵션 목록을 들고 있는 1:N 구조)
++- **UI**: `EvolutionChoiceUI`(`scenes/ui/EvolutionChoiceUI.tscn`)가 `RunState.evolution_ready` 신호를 받아 뜸. 레벨업 카드와 동일한 `SkillCard` 컴포넌트를 재사용해 `evolutions` 배열 크기(1~3)만큼 카드를 동적으로 배치. 카드를 고르면 `SkillController.evolve_skill()`이 베이스 스킬을 슬롯에서 제거하고 고른 진화형으로 대체
++- **일시정지 순서**: 레벨업 카드 선택 직후 바로 만렙+진화 조건이 충족될 수 있어(레벨업 카드 → 진화 선택 UI 연쇄), `RunState.has_pending_evolution` 플래그로 레벨업 UI가 먼저 일시정지를 풀어버리지 않도록 가드
++
++#### 4.3.3 예시: 물기의 진화형 2종 (코드명, 자연어 이름은 추후 확정)
++| 코드명 | 컨셉 | 구현 상태 |
++|---|---|---|
++| `bite_evo_1` (BiteEvo1) | 더 크고 강력하게 무는 형태 — 기존 물기보다 데미지 대폭 상승 | 기존 `BiteSkill` 로직/이펙트 씬을 그대로 재사용, 수치만 상향 — 바로 플레이 가능 |
++| `bite_evo_2` (BiteEvo2) | 포효하는 티라노사우루스 컨셉 — 데미지와 함께 광역 둔화·약화 디버프 | 로직 씬 미구현 상태의 "더미"(카드/HUD에는 노출되지만 실제 효과 없음) — 디버프 시스템이 아직 없어 8장 Open Question으로 이관 |
++
+ #### 4.3.1 태그 시스템
+ - 스킬은 `SkillData.tags: Array[StringName]`로 다중 분류됨 (예: `melee`, `summon`, `projectile`, `bomb`). 4.2 표의 값은 변주 체크용으로 하나씩만 부여했지만, 스킬 하나가 여러 태그를 동시에 가질 수 있는 구조
+ - **용도**: (1) 신규 스킬 추가 시 기존 아키타입과 안 겹치는지 변주 체크, (2) 향후 태그를 겨냥한 버프의 타겟팅 키 (예: "소환수 강화" 효과가 `summon` 태그를 가진 스킬 전체에 적용)
+@@ -152,7 +165,7 @@ Lv.1 ── Lv.2 ── Lv.3 ── Lv.4 ── Lv.5(만렙)
+ 
+ ### 4.5 진화·합체 트리거 방식 (확정)
+ 
+-- **개별 진화 (Lv5 도달 시)**: 자동 발동. 트리거 아이템 불필요 — 파트너 유무와 무관하게 만렙에 도달하는 즉시 진화형으로 교체
++- **개별 진화 (Lv5 도달 시)**: 트리거 아이템 불필요 — 파트너 유무와 무관하게 만렙에 도달하면 진화 선택 UI가 자동으로 뜸(4.3.2). 다만 어떤 진화형이 되는지는 그 자리에서 플레이어가 직접 고름(옵션 1~3개)
+ - **합체**: 트리거 아이템 방식 유지. 재료가 **전부 진화를 마친 상태**에서 "합체 트리거 아이템"을 보유하면 즉시 합체 발동
+   - **아이템 획득 경로**: 정예 개체 처치 시 드랍 (몹 티어 시스템, 6.2 참고와 연동)
+   - 레벨업 화면에 별도 선택지를 끼워넣는 방식이나 자동 발동 대신, **"강한 적을 잡아야 다음 단계로 갈 수 있다"는 행동 목표**가 생기는 쪽을 선택
+@@ -325,6 +338,8 @@ Lv.1 ── Lv.2 ── Lv.3 ── Lv.4 ── Lv.5(만렙)
+ 14. `공룡_뱀서라이크_기획데이터.xlsx`의 Skills 시트에서 `archetype`/`is_unique_active` 컬럼을 `tags`(다중값)로 교체 반영 필요
+ 15. 패시브 스킬(`SkillData.passive_modifiers`)의 "태그.효과필드" 타겟팅을 실제로 적용하는 스탯 계산기 구현 — 6.4/9번 항목과 함께 팀 확정 필요
+ 16. 태그별 효과필드(`range`/`projectile_count`/`poison_duration` 등) 이름 표준화 — 지금은 스킬 로직 스크립트마다 제각각인 하드코딩 상수라, 태그 대상 패시브가 공통으로 조회/수정할 수 있는 스키마가 아직 없음
++17. 상태이상(둔화/약화 등 디버프) 시스템 부재 — `bite_evo_2`(포효, 광역 둔화·약화)처럼 적에게 디버프를 거는 진화/스킬을 실제로 구현하려면 `Enemy`에 상태이상 적용·지속시간 관리 로직이 선행되어야 함. 지금은 로직 씬 없는 더미 상태
++18. 진화 선택 UI에서 진화 옵션이 정확히 몇 개일 때 카드 레이아웃을 어떻게 배치할지(1개일 때도 가운데 정렬 등) — 지금은 HBoxContainer 기본 정렬만 적용됨, 비주얼 폴리싱 필요
+ 
+ ---
+ 
+diff --git a/dino-survivor-develop/autoload/run_state.gd b/dino-survivor-develop/autoload/run_state.gd
+index 0b4a403..c87a1da 100644
+--- a/dino-survivor-develop/autoload/run_state.gd
++++ b/dino-survivor-develop/autoload/run_state.gd
+@@ -6,6 +6,8 @@ extends Node
+ signal leveled_up(new_level: int)                          ## 레벨업 UI가 이 신호를 받아 카드 팝업을 띄움
+ signal skill_acquired(data: SkillData)                      ## 스킬 신규 획득 (Lv.1) — HUD가 슬롯을 새로 추가
+ signal skill_leveled_up(data: SkillData, new_level: int)    ## 이미 보유한 스킬 레벨업 — HUD가 레벨 텍스트만 갱신
++signal skill_removed(id: StringName)                        ## 진화로 베이스 스킬이 슬롯에서 사라질 때 — HUD가 슬롯 제거
++signal evolution_ready(base_data: SkillData)                ## 스킬이 만렙+진화 옵션 보유 상태가 됐을 때 — EvolutionChoiceUI가 선택 팝업을 띄움
+ signal gold_changed(new_total: int)                         ## 골드 HUD가 이 신호를 받아 숫자를 갱신
+ 
+ var current_species: SpeciesData
+@@ -20,6 +22,7 @@ var owned_skills: Array[SkillData] = []  ## HUD 표시 순서 (획득한 순서)
+ var skill_levels: Dictionary = {}         ## StringName(스킬 id) -> int(레벨)
+ 
+ var is_game_over: bool = false  ## true인 동안 레벨업 카드 팝업 등 다른 일시정지 UI가 뜨지 않도록 막는 용도
++var has_pending_evolution: bool = false  ## 진화 선택 UI가 떠 있는 동안 true — 레벨업 카드가 뒤이어 일시정지를 풀지 않도록 막는 가드
+ 
+ func reset_run() -> void:
+ 	elapsed_time = 0.0
+@@ -29,6 +32,7 @@ func reset_run() -> void:
+ 	owned_skills.clear()
+ 	skill_levels.clear()
+ 	is_game_over = false
++	has_pending_evolution = false
+ 
+ ## 경험치 젬 등에서 호출. 임계값을 넘으면 레벨업하고 leveled_up을 emit합니다.
+ ## 한 번에 여러 레벨을 넘을 수도 있어 while로 처리합니다.
+@@ -57,3 +61,12 @@ func is_skill_owned(id: StringName) -> bool:
+ 
+ func skill_level(id: StringName) -> int:
+ 	return skill_levels.get(id, 0)
++
++## 진화 등으로 베이스 스킬이 슬롯에서 사라질 때 호출. skill_removed를 emit해 HUD 슬롯도 정리합니다.
++func remove_skill(id: StringName) -> void:
++	skill_levels.erase(id)
++	for i in range(owned_skills.size()):
++		if owned_skills[i].id == id:
++			owned_skills.remove_at(i)
++			break
++	skill_removed.emit(id)
+diff --git a/dino-survivor-develop/autoload/skill_database.gd b/dino-survivor-develop/autoload/skill_database.gd
+index a6846e4..5d665fb 100644
+--- a/dino-survivor-develop/autoload/skill_database.gd
++++ b/dino-survivor-develop/autoload/skill_database.gd
+@@ -2,6 +2,9 @@ extends Node
+ ## Autoload 싱글톤. data/skills/ 안의 모든 SkillData를 자동으로 로드해
+ ## 어디서든 조회할 수 있게 해줍니다. 새 스킬 .tres 파일을 추가해도
+ ## 이 스크립트를 건드릴 필요가 없습니다 (폴더를 스캔하기 때문).
++##
++## data/skill_evolutions/ 는 의도적으로 스캔하지 않습니다 — 진화형 스킬은
++## 공용 풀에 노출되지 않고 오직 베이스 SkillData.evolutions를 통해서만 참조됩니다 (기획서 4.3).
+ 
+ const SKILLS_PATH := "res://data/skills/"
+ 
+diff --git a/dino-survivor-develop/autoload/tag_database.gd b/dino-survivor-develop/autoload/tag_database.gd
+index 48c4833..f80c05b 100644
+--- a/dino-survivor-develop/autoload/tag_database.gd
++++ b/dino-survivor-develop/autoload/tag_database.gd
+@@ -12,6 +12,7 @@ const DISPLAY_NAMES: Dictionary = {
+ 	&"ranged_spread": "확산",
+ 	&"suction": "흡입",
+ 	&"utility": "유틸",
++	&"debuff": "디버프",
+ }
+ 
+ ## 매핑에 없는 태그(추가 직후 라벨을 아직 안 붙인 경우 등)는 원본 id를 그대로 보여줌
+diff --git a/dino-survivor-develop/data/skill_evolutions/bite_evo_1.tres b/dino-survivor-develop/data/skill_evolutions/bite_evo_1.tres
+new file mode 100644
+index 0000000..34cc4a7
+--- /dev/null
++++ b/dino-survivor-develop/data/skill_evolutions/bite_evo_1.tres
+@@ -0,0 +1,19 @@
++[gd_resource type="Resource" script_class="SkillData" format=3]
++
++[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
++[ext_resource type="PackedScene" path="res://scenes/skills/BiteSkill.tscn" id="2"]
++[ext_resource type="PackedScene" path="res://scenes/skills/BiteHitEffect.tscn" id="3"]
++
++[resource]
++script = ExtResource("1")
++id = &"bite_evo_1"
++display_name = "BiteEvo1"
++species_motif = "티라노사우루스"
++flavor_text = "티라노사우루스의 턱 힘은 나이가 들수록 세진다고 합니다. 이쯤되면 물기가 아니라 그냥 압사 아닌가요? 한 입에 (데미지_숫자)의 피해를 입힙니다."
++tags = Array[StringName](["suction"])
++base_damage = 32.0
++cooldown = 1.0
++max_level = 1
++effect_scene = ExtResource("3")
++logic_scene = ExtResource("2")
++icon_color = Color(1.0, 0.65, 0.05, 1)
+diff --git a/dino-survivor-develop/data/skill_evolutions/bite_evo_2.tres b/dino-survivor-develop/data/skill_evolutions/bite_evo_2.tres
+new file mode 100644
+index 0000000..2b30201
+--- /dev/null
++++ b/dino-survivor-develop/data/skill_evolutions/bite_evo_2.tres
+@@ -0,0 +1,15 @@
++[gd_resource type="Resource" script_class="SkillData" format=3]
++
++[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
++
++[resource]
++script = ExtResource("1")
++id = &"bite_evo_2"
++display_name = "BiteEvo2"
++species_motif = "티라노사우루스"
++flavor_text = "티라노사우루스의 포효는 반경 수십 미터의 초식동물을 얼어붙게 했다고 합니다. 요즘 회의실에서도 통할 것 같은데요? 포효와 함께 (데미지_숫자)의 피해를 주고, 주변 적을 둔화·약화시킵니다."
++tags = Array[StringName](["burst", "debuff"])
++base_damage = 20.0
++cooldown = 4.0
++max_level = 1
++icon_color = Color(0.55, 0.15, 0.65, 1)
+diff --git a/dino-survivor-develop/data/skills/bite.tres b/dino-survivor-develop/data/skills/bite.tres
+index b2b2a8b..9add14e 100644
+--- a/dino-survivor-develop/data/skills/bite.tres
++++ b/dino-survivor-develop/data/skills/bite.tres
+@@ -3,6 +3,8 @@
+ [ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1"]
+ [ext_resource type="PackedScene" uid="uid://c3s4lcggsl7e6" path="res://scenes/skills/BiteSkill.tscn" id="2"]
+ [ext_resource type="PackedScene" uid="uid://ctllic6uoe7cf" path="res://scenes/skills/BiteHitEffect.tscn" id="3"]
++[ext_resource type="Resource" path="res://data/skill_evolutions/bite_evo_1.tres" id="4"]
++[ext_resource type="Resource" path="res://data/skill_evolutions/bite_evo_2.tres" id="5"]
+ 
+ [resource]
+ script = ExtResource("1")
+@@ -15,4 +17,5 @@ base_damage = 15.0
+ cooldown = 0.8
+ effect_scene = ExtResource("3")
+ logic_scene = ExtResource("2")
++evolutions = Array[ExtResource("1")]([ExtResource("4"), ExtResource("5")])
+ icon_color = Color(0.9, 0.85, 0.2, 1)
+diff --git a/dino-survivor-develop/resource_types/skill_data.gd b/dino-survivor-develop/resource_types/skill_data.gd
+index fa75166..77124ef 100644
+--- a/dino-survivor-develop/resource_types/skill_data.gd
++++ b/dino-survivor-develop/resource_types/skill_data.gd
+@@ -29,6 +29,9 @@ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문
+ @export var effect_scene: PackedScene  ## 투사체/이펙트 씬 (있는 경우)
+ @export var logic_scene: PackedScene   ## 이 스킬의 실제 동작을 구현한 로직 씬 (SkillInstanceBase 상속). 비어있으면 "더미"(UI에만 존재, 실제 동작 없음)
+ 
++@export_group("진화")
++@export var evolutions: Array[SkillData] = []  ## 이 스킬이 만렙(Lv5)에 도달했을 때 제시할 진화 선택지 (1~3개, 기획서 4.3/4.5). 진화형 SkillData는 이 배열을 가진 "베이스 스킬"과 달리 data/skill_evolutions/ 에 따로 보관하고 max_level=1로 설정 — 공용 풀(SkillDatabase)에는 스캔되지 않음
++
+ @export_group("패시브 효과")
+ @export var passive_modifiers: Array[StatModifierData] = []  ## category가 PASSIVE일 때만 사용. 각 항목의 stat_id에 점(.)이 있으면 "태그.효과필드"로 그 태그를 가진 액티브 스킬 전체를 겨냥(예: "projectile.range" → 투사체 태그 스킬 전부의 사거리 증가), 없으면 전역 스탯(기획서 6.4) 강화. 특정 스킬 하나를 직접 지정하는 MasteryMilestoneData.target("스킬id.수치필드")과는 좌변 의미가 다름 — 기획서 4.2.1
+ 
+diff --git a/dino-survivor-develop/scenes/ui/EvolutionChoiceUI.tscn b/dino-survivor-develop/scenes/ui/EvolutionChoiceUI.tscn
+new file mode 100644
+index 0000000..0fd1817
+--- /dev/null
++++ b/dino-survivor-develop/scenes/ui/EvolutionChoiceUI.tscn
+@@ -0,0 +1,33 @@
++[gd_scene load_steps=2 format=3]
++
++[ext_resource type="Script" path="res://scripts/ui/evolution_choice_ui.gd" id="1"]
++
++[node name="EvolutionChoiceUI" type="Control"]
++anchors_preset = 15
++anchor_right = 1.0
++anchor_bottom = 1.0
++grow_horizontal = 2
++grow_vertical = 2
++visible = false
++script = ExtResource("1")
++
++[node name="DimBackground" type="ColorRect" parent="."]
++layout_mode = 1
++anchors_preset = 15
++anchor_right = 1.0
++anchor_bottom = 1.0
++grow_horizontal = 2
++grow_vertical = 2
++mouse_filter = 2
++color = Color(0, 0, 0, 0.55)
++
++[node name="CardRow" type="HBoxContainer" parent="."]
++layout_mode = 1
++anchors_preset = 8
++anchor_left = 0.5
++anchor_top = 0.5
++anchor_right = 0.5
++anchor_bottom = 0.5
++grow_horizontal = 2
++grow_vertical = 2
++theme_override_constants/separation = 24
+diff --git a/dino-survivor-develop/scenes/ui/GameUI.tscn b/dino-survivor-develop/scenes/ui/GameUI.tscn
+index 861db9a..40ae359 100644
+--- a/dino-survivor-develop/scenes/ui/GameUI.tscn
++++ b/dino-survivor-develop/scenes/ui/GameUI.tscn
+@@ -1,10 +1,11 @@
+-[gd_scene load_steps=6 format=3]
++[gd_scene load_steps=7 format=3]
+ 
+ [ext_resource type="PackedScene" path="res://scenes/ui/SkillHUD.tscn" id="1"]
+ [ext_resource type="PackedScene" path="res://scenes/ui/LevelUpUI.tscn" id="2"]
+ [ext_resource type="PackedScene" path="res://scenes/ui/HealthBar.tscn" id="3"]
+ [ext_resource type="PackedScene" path="res://scenes/ui/GameOverUI.tscn" id="4"]
+ [ext_resource type="PackedScene" path="res://scenes/ui/GoldHUD.tscn" id="5"]
++[ext_resource type="PackedScene" path="res://scenes/ui/EvolutionChoiceUI.tscn" id="6"]
+ 
+ [node name="GameUI" type="CanvasLayer"]
+ 
+@@ -14,6 +15,8 @@
+ 
+ [node name="LevelUpUI" parent="." instance=ExtResource("2")]
+ 
++[node name="EvolutionChoiceUI" parent="." instance=ExtResource("6")]
++
+ [node name="GameOverUI" parent="." instance=ExtResource("4")]
+ 
+ [node name="GoldHUD" parent="." instance=ExtResource("5")]
+diff --git a/dino-survivor-develop/scripts/systems/skill_controller.gd b/dino-survivor-develop/scripts/systems/skill_controller.gd
+index 8d90c3f..9af8ea4 100644
+--- a/dino-survivor-develop/scripts/systems/skill_controller.gd
++++ b/dino-survivor-develop/scripts/systems/skill_controller.gd
+@@ -1,7 +1,8 @@
+ class_name SkillController
+ extends Node
+ ## Player의 자식 노드로 부착. 장착된 스킬(SkillData)들을 실제 동작(SkillInstanceBase)으로
+-## 변환해 관리합니다. acquire_skill()이 신규 획득/레벨업 UI의 유일한 진입점입니다.
++## 변환해 관리합니다. acquire_skill()이 신규 획득/레벨업 UI의 유일한 진입점이고,
++## evolve_skill()이 진화 선택 UI의 유일한 진입점입니다.
+ 
+ @export var starting_skill_ids: Array[StringName] = [&"bite", &"mace"]  ## 프로토타입은 티라노 1종 고정이라 하드코딩. 종족 다양화 시 SpeciesData에서 가져오도록 변경 예정.
+ 
+@@ -24,6 +25,8 @@ func acquire_skill(id: StringName) -> void:
+ 	if RunState.is_skill_owned(id):
+ 		RunState.skill_levels[id] += 1
+ 		RunState.skill_leveled_up.emit(data, RunState.skill_levels[id])
++		if RunState.skill_levels[id] >= data.max_level and not data.evolutions.is_empty():
++			RunState.evolution_ready.emit(data)
+ 		return
+ 
+ 	RunState.skill_levels[id] = 1
+@@ -34,3 +37,20 @@ func acquire_skill(id: StringName) -> void:
+ 		instance.setup(data, owner_body)
+ 		_instances[id] = instance
+ 	RunState.skill_acquired.emit(data)
++
++## 진화 선택 UI에서 하나를 고르면 호출됩니다. 베이스 스킬을 슬롯에서 제거하고
++## 그 자리를 진화형 스킬로 대체합니다 (기획서 4.3).
++func evolve_skill(base_id: StringName, evolution_data: SkillData) -> void:
++	if _instances.has(base_id):
++		_instances[base_id].queue_free()
++		_instances.erase(base_id)
++	RunState.remove_skill(base_id)
++
++	RunState.skill_levels[evolution_data.id] = evolution_data.max_level
++	RunState.owned_skills.append(evolution_data)
++	if evolution_data.logic_scene != null:
++		var instance: SkillInstanceBase = evolution_data.logic_scene.instantiate()
++		add_child(instance)
++		instance.setup(evolution_data, owner_body)
++		_instances[evolution_data.id] = instance
++	RunState.skill_acquired.emit(evolution_data)
+diff --git a/dino-survivor-develop/scripts/ui/evolution_choice_ui.gd b/dino-survivor-develop/scripts/ui/evolution_choice_ui.gd
+new file mode 100644
+index 0000000..7af3eae
+--- /dev/null
++++ b/dino-survivor-develop/scripts/ui/evolution_choice_ui.gd
+@@ -0,0 +1,47 @@
++extends Control
++## 스킬이 만렙+진화 옵션 보유 상태가 되면 뜨는 진화 선택 팝업.
++## SkillCard를 재사용해 1~3장을 동적으로 배치합니다 (진화 옵션 개수만큼, 기획서 4.3/4.5).
++## 레벨업 카드 선택 직후 곧바로 뜰 수 있어(RunState.has_pending_evolution),
++## 팝업이 떠 있는 동안 게임을 일시정지합니다.
++
++const CARD_SCENE := preload("res://scenes/ui/SkillCard.tscn")
++
++@onready var card_row: HBoxContainer = $CardRow
++
++var _base_data: SkillData
++var _skill_controller: SkillController
++
++func _ready() -> void:
++	process_mode = Node.PROCESS_MODE_ALWAYS
++	visible = false
++	RunState.evolution_ready.connect(_on_evolution_ready)
++
++func _on_evolution_ready(base_data: SkillData) -> void:
++	if RunState.is_game_over:
++		return
++	_base_data = base_data
++	_open()
++
++func _open() -> void:
++	for child in card_row.get_children():
++		child.queue_free()
++	for evolution_data in _base_data.evolutions:
++		var card: SkillCard = CARD_SCENE.instantiate()
++		card_row.add_child(card)
++		card.setup(evolution_data, false)
++		card.selected.connect(_on_evolution_selected)
++	RunState.has_pending_evolution = true
++	visible = true
++	get_tree().paused = true
++
++func _on_evolution_selected(evolution_data: SkillData) -> void:
++	_get_skill_controller().evolve_skill(_base_data.id, evolution_data)
++	visible = false
++	RunState.has_pending_evolution = false
++	get_tree().paused = false
++
++func _get_skill_controller() -> SkillController:
++	if _skill_controller == null:
++		var player := get_tree().get_first_node_in_group("player")
++		_skill_controller = player.get_node("SkillController") as SkillController
++	return _skill_controller
+diff --git a/dino-survivor-develop/scripts/ui/level_up_ui.gd b/dino-survivor-develop/scripts/ui/level_up_ui.gd
+index 6dd2fc8..834ca0d 100644
+--- a/dino-survivor-develop/scripts/ui/level_up_ui.gd
++++ b/dino-survivor-develop/scripts/ui/level_up_ui.gd
+@@ -2,6 +2,8 @@ extends Control
+ ## 레벨업 시 스킬 카드 3장을 보여주고, 선택되면 SkillController.acquire_skill()을 호출합니다.
+ ## 팝업이 떠 있는 동안 게임을 일시정지(get_tree().paused)하며, 이 노드 자신은
+ ## process_mode = ALWAYS라 일시정지 중에도 카드 클릭을 받을 수 있습니다.
++## 선택한 스킬이 곧바로 만렙+진화 조건을 채우면 EvolutionChoiceUI가 이어서 뜨는데,
++## 그 경우 RunState.has_pending_evolution을 보고 일시정지를 풀지 않고 넘겨줍니다.
+ 
+ const CARD_COUNT := 3
+ 
+@@ -47,7 +49,8 @@ func _pick_random_skills(count: int) -> Array[SkillData]:
+ func _on_card_selected(data: SkillData) -> void:
+ 	_get_skill_controller().acquire_skill(data.id)
+ 	visible = false
+-	get_tree().paused = false
++	if not RunState.has_pending_evolution:
++		get_tree().paused = false
+ 
+ func _get_skill_controller() -> SkillController:
+ 	if _skill_controller == null:
+diff --git a/dino-survivor-develop/scripts/ui/skill_hud.gd b/dino-survivor-develop/scripts/ui/skill_hud.gd
+index 0c7d9e9..c7340da 100644
+--- a/dino-survivor-develop/scripts/ui/skill_hud.gd
++++ b/dino-survivor-develop/scripts/ui/skill_hud.gd
+@@ -9,6 +9,7 @@ var _slots: Dictionary = {}  # StringName(스킬 id) -> SkillHUDSlot
+ func _ready() -> void:
+ 	RunState.skill_acquired.connect(_on_skill_acquired)
+ 	RunState.skill_leveled_up.connect(_on_skill_leveled_up)
++	RunState.skill_removed.connect(_on_skill_removed)
+ 	for data in RunState.owned_skills:
+ 		_add_slot(data)
+ 
+@@ -28,3 +29,8 @@ func _on_skill_acquired(data: SkillData) -> void:
+ func _on_skill_leveled_up(data: SkillData, new_level: int) -> void:
+ 	if _slots.has(data.id):
+ 		_slots[data.id].set_level(new_level)
++
++func _on_skill_removed(id: StringName) -> void:
++	if _slots.has(id):
++		_slots[id].queue_free()
++		_slots.erase(id)
+-- 
+2.43.0
+

@@ -2,14 +2,18 @@
 
 [ext_resource type="Script" uid="uid://c1px7ms7exys6" path="res://resource_types/loot_table.gd" id="1"]
 [ext_resource type="Script" uid="uid://tlueufoht1sn" path="res://resource_types/loot_entry.gd" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/entities/pickups/XPGem.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/entities/pickups/XPGemSmall.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/entities/pickups/GoldCoin.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/entities/pickups/XPGemMedium.tscn" id="5"]
 
-[sub_resource type="Resource" id="LootEntry_xp"]
+[sub_resource type="Resource" id="LootEntry_xp_small"]
 script = ExtResource("2")
 item_scene = ExtResource("3")
-min_count = 4
-max_count = 6
+max_count = 2
+
+[sub_resource type="Resource" id="LootEntry_xp_medium"]
+script = ExtResource("2")
+item_scene = ExtResource("5")
 
 [sub_resource type="Resource" id="LootEntry_gold"]
 script = ExtResource("2")
@@ -20,4 +24,4 @@ max_count = 4
 
 [resource]
 script = ExtResource("1")
-entries = Array[ExtResource("2")]([SubResource("LootEntry_xp"), SubResource("LootEntry_gold")])
+entries = Array[ExtResource("2")]([SubResource("LootEntry_xp_small"), SubResource("LootEntry_xp_medium"), SubResource("LootEntry_gold")])

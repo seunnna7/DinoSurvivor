@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/pickups/xp_gem.gd" id="1"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_xp"]
+radius = 6.0
+
+[node name="XPGemSmall" type="Area2D"]
+script = ExtResource("1")
+xp_value = 5
+
+[node name="Visual" type="ColorRect" parent="."]
+offset_left = -6.0
+offset_top = -6.0
+offset_right = 6.0
+offset_bottom = 6.0
+color = Color(0.3, 0.9, 1.0, 1)
+mouse_filter = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_xp")
