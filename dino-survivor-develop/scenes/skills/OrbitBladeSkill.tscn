@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cis8s5gib6cc6"]
 
-[ext_resource type="Script" path="res://scripts/systems/skills/orbit_blade_skill.gd" id="1"]
+[ext_resource type="Script" uid="uid://dmgp4sbsxa6gb" path="res://scripts/systems/skills/orbit_blade_skill.gd" id="1"]
 
-[node name="OrbitBladeSkill" type="Node"]
+[node name="OrbitBladeSkill" type="Node" unique_id=447941036]
 script = ExtResource("1")

@@ -5,6 +5,7 @@ extends Control
 
 @onready var retry_button: Button = $Panel/VBox/RetryButton
 @onready var main_menu_button: Button = $Panel/VBox/MainMenuButton
+@onready var survival_time_label: Label = $Panel/VBox/SurvivalTimeLabel
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -20,6 +21,7 @@ func _on_player_died() -> void:
 		return
 	RunState.is_game_over = true
 	MetaProgress.add_gold(RunState.gold)  # 런 종료 시점에 이번 판 골드를 보유 골드에 1회 합산
+	survival_time_label.text = "최종 생존시간: %s" % RunState.format_time(RunState.elapsed_time)
 	visible = true
 	get_tree().paused = true
 

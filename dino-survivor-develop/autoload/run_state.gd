@@ -7,6 +7,7 @@ signal leveled_up(new_level: int)                          ## 레벨업 UI가 �
 signal skill_acquired(data: SkillData)                      ## 스킬 신규 획득 (Lv.1) — HUD가 슬롯을 새로 추가
 signal skill_leveled_up(data: SkillData, new_level: int)    ## 이미 보유한 스킬 레벨업 — HUD가 레벨 텍스트만 갱신
 signal gold_changed(new_total: int)                         ## 골드 HUD가 이 신호를 받아 숫자를 갱신
+signal experience_changed(current: int, needed: int)        ## 레벨/경험치 HUD가 이 신호를 받아 게이지 바를 갱신
 
 var current_species: SpeciesData
 var current_stance: SkillData.Stance = SkillData.Stance.BIPED
@@ -36,13 +37,14 @@ func add_experience(amount: int) -> void:
 	if is_game_over:
 		return
 	experience += amount
-	while experience >= _xp_to_next_level():
-		experience -= _xp_to_next_level()
+	while experience >= xp_to_next_level():
+		experience -= xp_to_next_level()
 		level += 1
 		leveled_up.emit(level)
+	experience_changed.emit(experience, xp_to_next_level())
 
 ## 다음 레벨까지 필요한 경험치. 간단한 선형 증가 (추후 밸런싱 시 조정 예정)
-func _xp_to_next_level() -> int:
+func xp_to_next_level() -> int:
 	return 10 + (level - 1) * 5
 
 ## 골드 코인 등에서 호출. 이번 런에서 번 골드는 게임 오버 시 MetaProgress로 합산됩니다.
@@ -57,3 +59,10 @@ func is_skill_owned(id: StringName) -> bool:
 
 func skill_level(id: StringName) -> int:
 	return skill_levels.get(id, 0)
+
+## 생존시간(elapsed_time) 등 초 단위 값을 "분:초" 형태(예: 03:45)로 표시할 때 공용으로 사용
+static func format_time(total_seconds: float) -> String:
+	var total := int(total_seconds)
+	var minutes := total / 60
+	var seconds := total % 60
+	return "%02d:%02d" % [minutes, seconds]
