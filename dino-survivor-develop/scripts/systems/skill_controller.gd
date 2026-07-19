@@ -23,6 +23,8 @@ func acquire_skill(id: StringName) -> void:
 
 	if RunState.is_skill_owned(id):
 		RunState.skill_levels[id] += 1
+		if _instances.has(id):
+			_instances[id].level = RunState.skill_levels[id]
 		RunState.skill_leveled_up.emit(data, RunState.skill_levels[id])
 		if RunState.skill_levels[id] >= data.max_level and not data.evolutions.is_empty():
 			RunState.evolution_ready.emit(data)

@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/skills/claw_swipe_area.gd" id="1"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_claw"]
+radius = 55.0
+
+[node name="ClawSwipeArea" type="Area2D"]
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_claw")
+
+[node name="Slash1" type="Polygon2D" parent="."]
+position = Vector2(-15, -15)
+rotation = -0.7854
+polygon = PackedVector2Array(-25, -3, 25, -3, 25, 3, -25, 3)
+color = Color(0.9, 0.2, 0.2, 0.85)
+
+[node name="Slash2" type="Polygon2D" parent="."]
+rotation = -0.7854
+polygon = PackedVector2Array(-25, -3, 25, -3, 25, 3, -25, 3)
+color = Color(0.9, 0.2, 0.2, 0.85)
+
+[node name="Slash3" type="Polygon2D" parent="."]
+position = Vector2(15, 15)
+rotation = -0.7854
+polygon = PackedVector2Array(-25, -3, 25, -3, 25, 3, -25, 3)
+color = Color(0.9, 0.2, 0.2, 0.85)

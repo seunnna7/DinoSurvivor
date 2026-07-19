@@ -1,16 +1,18 @@
-[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://ba48vnc05lnxg"]
+[gd_resource type="Resource" script_class="OrbitSkillData" format=3 uid="uid://ba48vnc05lnxg"]
 
 [ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/skills/OrbitBladeSkill.tscn" id="2"]
+[ext_resource type="Script" path="res://resource_types/orbit_skill_data.gd" id="3"]
 
 [resource]
-script = ExtResource("1")
+script = ExtResource("3")
 id = &"orbit_blade"
 display_name = "골판 두르기"
 species_motif = "스테고사우루스"
 flavor_text = "스테고사우루스의 골판에 베인다고 상상해보세요. 골판이 뭉툭하다는 상상력 없는 말은 하지 마세요!"
 tags = Array[StringName](["orbit"])
 base_damage = 4.0
-cooldown = 0.4
 logic_scene = ExtResource("2")
+level_damage = Array[float]([1.0, 1.2, 1.2, 1.5, 1.5])
+level_orbit_body_count = Array[int]([3, 3, 4, 4, 4])
 icon_color = Color(0.6, 0.55, 0.35, 1)

@@ -42,7 +42,11 @@ func _show_range_indicator(radius: float, ring_color: Color = Color(1.0, 1.0, 1.
 		indicator.facing_source = owner_body
 	owner_body.add_child.call_deferred(indicator)
 
-## 레벨에 따른 데미지 배율. 간단한 선형 증가 (추후 밸런싱 시 조정 예정)
+## 레벨에 따른 데미지 배율. 기본은 간단한 선형 증가(레벨당 +20%).
+## BaseSkill(및 그 하위 아키타입)을 상속하는 스킬은 이 함수를 오버라이드해서
+## 스킬 데이터에 적힌 레벨별 배율(BaseSkillData.level_damage)을 대신 사용합니다 — 실제로
+## 현재 모든 구현된 스킬이 BaseSkill 계열이라, 이 선형 공식은 미래에 BaseSkill을 거치지 않는
+## 단순한 스킬을 추가할 때를 위한 기본값/안전망입니다.
 ## owner_body는 항상 Player이므로 그쪽의 damage_multiplier(메타 강화 반영)를 곱함.
 func _leveled_damage() -> float:
 	var mult := 1.0

@@ -1,17 +1,29 @@
-[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://ta5jp3c4btp8"]
+[gd_resource type="Resource" script_class="MaceSkillData" format=3 uid="uid://ta5jp3c4btp8"]
 
 [ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/skills/MaceSkill.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/skills/MaceImpactEffect.tscn" id="3"]
 [ext_resource type="Script" uid="uid://drcumpt1lyw1e" path="res://resource_types/stat_modifier_data.gd" id="4_jjn0y"]
+[ext_resource type="Script" path="res://resource_types/melee_skill_data.gd" id="5"]
+[ext_resource type="Script" path="res://resource_types/mace_skill_data.gd" id="6"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/mace_evo_omni.tres" id="7"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/mace_evo_slam.tres" id="8"]
 
 [resource]
-script = ExtResource("1")
+script = ExtResource("6")
 id = &"mace"
 display_name = "철퇴"
 species_motif = "안킬로사우루스"
 flavor_text = "휘두르는 데 0.4초, 그 안에 있던 모든 것이 후회하는 데는 0초. 충격과 함께 (데미지_숫자)의 피해를 줍니다."
-tags = Array[StringName]([&"melee"])
+tags = Array[StringName]([&"melee", &"knockback"])
 effect_scene = ExtResource("3")
 logic_scene = ExtResource("2")
+evolutions = Array[ExtResource("1")]([ExtResource("7"), ExtResource("8")])
+level_range = Array[float]([90.0, 90.0, 90.0, 110.0, 110.0])
+level_arc_degrees = Array[float]([90.0, 90.0, 180.0, 180.0, 180.0])
+hit_delay = 0.4
+target_mode = 1
+level_damage = Array[float]([1.0, 1.25, 1.25, 1.6, 1.6])
+knockback_force = 220.0
+knockback_duration = 0.25
 icon_color = Color(0.9, 0.5, 0.1, 1)

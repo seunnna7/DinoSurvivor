@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PackHuntData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/pack_hunt_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/PackHuntSkill.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"pack_hunt_evo_zone"
+display_name = "공격명령"
+species_motif = "데이노니쿠스"
+flavor_text = "이제 흩어져 할퀴는 게 아니라, 무리 전체가 한 방향을 노립니다. 가장 가까운 적을 향해 서서히 다가가는 사냥 영역이 그 안의 적에게 지속적으로 (데미지_숫자)의 피해를 줍니다."
+tags = Array[StringName]([&"area"])
+base_damage = 10.0
+cooldown = 4.0
+max_level = 1
+logic_scene = ExtResource("2")
+evolution = 2
+zone_radius = 120.0
+zone_duration = 5.0
+zone_move_speed = 50.0
+zone_tick_interval = 0.5
+icon_color = Color(0.5, 0.05, 0.05, 1)

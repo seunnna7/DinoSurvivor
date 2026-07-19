@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="MaceSkillData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/mace_skill_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/MaceSkill.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"mace_evo_slam"
+display_name = "지축 붕괴"
+species_motif = "안킬로사우루스"
+flavor_text = "휘두르는 대신 내리찍습니다. 땅이 먼저 항복하고, 그 다음이 적입니다. 착지 지점 반경에 (데미지_숫자)의 폭발 피해와 강한 넉백을 줍니다."
+tags = Array[StringName]([&"melee", &"knockback"])
+base_damage = 22.0
+cooldown = 1.2
+max_level = 1
+logic_scene = ExtResource("2")
+level_range = Array[float]([140.0, 140.0, 140.0, 140.0, 140.0])
+evolution = 2
+slam_radius = 110.0
+slam_knockback_force = 500.0
+icon_color = Color(0.8, 0.35, 0.05, 1)

@@ -1,13 +1,14 @@
-[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://b63nry8pllqbl"]
+[gd_resource type="Resource" script_class="MeleeSkillData" format=3 uid="uid://b63nry8pllqbl"]
 
 [ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://c3s4lcggsl7e6" path="res://scenes/skills/BiteSkill.tscn" id="2"]
 [ext_resource type="PackedScene" uid="uid://ctllic6uoe7cf" path="res://scenes/skills/BiteHitEffect.tscn" id="3"]
 [ext_resource type="Resource" path="res://data/skill_evolutions/bite_evo_1.tres" id="4"]
 [ext_resource type="Resource" path="res://data/skill_evolutions/bite_evo_2.tres" id="5"]
+[ext_resource type="Script" path="res://resource_types/melee_skill_data.gd" id="6"]
 
 [resource]
-script = ExtResource("1")
+script = ExtResource("6")
 id = &"bite"
 display_name = "폭군의 턱"
 species_motif = "티라노사우루스"
@@ -18,4 +19,6 @@ cooldown = 0.8
 effect_scene = ExtResource("3")
 logic_scene = ExtResource("2")
 evolutions = Array[ExtResource("1")]([ExtResource("4"), ExtResource("5")])
+level_damage = Array[float]([1.0, 1.35, 1.5, 2.0, 2.2])
+level_target_count = Array[int]([1, 1, 2, 2, 2])
 icon_color = Color(0.9, 0.85, 0.2, 1)

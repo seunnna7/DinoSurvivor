@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="PackHuntData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/pack_hunt_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/PackHuntSkill.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"pack_hunt_evo_bleed"
+display_name = "비열한 협공"
+species_motif = "데이노니쿠스"
+flavor_text = "한 번에 안 끝나면, 여러 번 끝내면 됩니다. 할퀸 자리에 계속 발톱을 박아넣어 (데미지_숫자)의 피해를 반복해서 주고, 상처는 출혈로 남습니다."
+tags = Array[StringName]([&"area", &"debuff"])
+base_damage = 8.0
+cooldown = 2.5
+max_level = 1
+logic_scene = ExtResource("2")
+evolution = 1
+level_radius = Array[float]([70.0, 70.0, 70.0, 70.0, 70.0])
+level_strike_count = Array[int]([2, 2, 2, 2, 2])
+multi_hit_tick_interval = 0.35
+multi_hit_duration = 1.8
+bleed_damage_per_second = 6.0
+bleed_duration = 2.5
+icon_color = Color(0.75, 0.1, 0.1, 1)

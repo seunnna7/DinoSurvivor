@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="PackHuntData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
+[ext_resource type="Script" path="res://resource_types/pack_hunt_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/PackHuntSkill.tscn" id="3"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/pack_hunt_evo_bleed.tres" id="4"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/pack_hunt_evo_zone.tres" id="5"]
+
+[resource]
+script = ExtResource("2")
+id = &"pack_hunt"
+display_name = "무리 사냥"
+species_motif = "데이노니쿠스"
+flavor_text = "혼자면 못 이길 상대도 무리로 덤비면 이야기가 다릅니다. 화면 곳곳에서 발톱이 스쳐 지나가며 (데미지_숫자)의 피해를 입힙니다."
+tags = Array[StringName]([&"area"])
+base_damage = 14.0
+cooldown = 2.5
+max_level = 5
+logic_scene = ExtResource("3")
+evolutions = Array[ExtResource("1")]([ExtResource("4"), ExtResource("5")])
+level_damage = Array[float]([1.0, 1.3, 1.3, 1.7, 1.9])
+level_radius = Array[float]([55.0, 55.0, 55.0, 70.0, 70.0])
+level_strike_count = Array[int]([1, 1, 2, 2, 2])
+icon_color = Color(0.7, 0.25, 0.15, 1)

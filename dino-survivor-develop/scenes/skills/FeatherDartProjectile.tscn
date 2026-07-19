@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/skills/feather_dart_projectile.gd" id="1"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_dart"]
+radius = 6.0
+
+[node name="FeatherDartProjectile" type="Area2D"]
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_dart")
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(10, 0, -6, -5, -2, 0, -6, 5)
+color = Color(0.95, 0.9, 0.75, 1)

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="FeatherDartData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/feather_dart_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/FeatherDartSkill.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"feather_dart_evo_ricochet"
+display_name = "팅!"
+species_motif = "始祖鳥(시조새)"
+flavor_text = "깃털 하나가 벽까지 오갈 줄이야. 탄성이 남다른 이 깃털은 화면 끝에 닿을 때마다 튕겨 나가며 계속 적을 노립니다. 도착 지점에서 (데미지_숫자)의 피해를 입힙니다."
+tags = Array[StringName]([&"projectile"])
+base_damage = 12.0
+cooldown = 1.2
+max_level = 1
+logic_scene = ExtResource("2")
+evolution = 2
+level_range = Array[float]([520.0, 520.0, 520.0, 520.0, 520.0])
+level_pierce_enabled = Array[bool]([true, true, true, true, true])
+aoe_radius = 28.0
+shoulder_offset = 14.0
+cross_damage_multiplier = 2.0
+max_bounce_count = 3
+icon_color = Color(0.55, 0.85, 1.0, 1)

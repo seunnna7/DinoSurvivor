@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="MaceSkillData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/mace_skill_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/MaceSkill.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/MaceImpactEffect.tscn" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"mace_evo_omni"
+display_name = "전방위 강타"
+species_motif = "안킬로사우루스"
+flavor_text = "굳이 방향을 가릴 필요가 있나요? 사방으로 휘두르는 철퇴 앞에서는 등 뒤도 안전하지 않습니다. 주변 전체에 (데미지_숫자)의 피해와 넉백을 줍니다."
+tags = Array[StringName]([&"melee", &"knockback"])
+base_damage = 16.0
+cooldown = 1.0
+max_level = 1
+effect_scene = ExtResource("3")
+logic_scene = ExtResource("2")
+level_range = Array[float]([110.0, 110.0, 110.0, 110.0, 110.0])
+level_arc_degrees = Array[float]([360.0, 360.0, 360.0, 360.0, 360.0])
+hit_delay = 0.4
+target_mode = 1
+evolution = 1
+knockback_force = 260.0
+knockback_duration = 0.25
+icon_color = Color(1.0, 0.7, 0.2, 1)

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EggBombData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
+[ext_resource type="Script" path="res://resource_types/egg_bomb_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/EggBombSkill.tscn" id="3"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/egg_bomb_evo_big.tres" id="4"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/egg_bomb_evo_cluster.tres" id="5"]
+
+[resource]
+script = ExtResource("2")
+id = &"egg_bomb"
+display_name = "알 폭탄"
+species_motif = "마이아사우라"
+flavor_text = "둥지를 지키던 습성이 이렇게 쓰일 줄은 몰랐을 겁니다. 포물선을 그리며 날아가 떨어진 자리에서 (데미지_숫자)의 폭발 피해를 줍니다."
+tags = Array[StringName]([&"lob", &"area"])
+base_damage = 18.0
+cooldown = 3.0
+max_level = 5
+logic_scene = ExtResource("3")
+evolutions = Array[ExtResource("1")]([ExtResource("4"), ExtResource("5")])
+throw_range = 240.0
+flight_time = 0.5
+level_aoe_radius = Array[float]([50.0, 50.0, 70.0, 70.0, 70.0])
+level_damage = Array[float]([1.0, 1.2, 1.35, 1.6, 1.8])
+icon_color = Color(0.95, 0.85, 0.5, 1)

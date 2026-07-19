@@ -13,6 +13,9 @@ const DISPLAY_NAMES: Dictionary = {
 	&"suction": "흡입",
 	&"utility": "유틸",
 	&"debuff": "디버프",
+	&"lob": "곡사",
+	&"area": "범위",
+	&"knockback": "넉백",
 }
 
 ## 매핑에 없는 태그(추가 직후 라벨을 아직 안 붙인 경우 등)는 원본 id를 그대로 보여줌

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EggBombData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/egg_bomb_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/EggBombSkill.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"egg_bomb_evo_big"
+display_name = "특란"
+species_motif = "마이아사우라"
+flavor_text = "커도 너무 큰 알입니다. 대신 그만큼 오래 품어야 하죠. 훨씬 넓은 범위에 (데미지_숫자)의 폭발 피해를 주지만, 재사용 대기시간이 깁니다."
+tags = Array[StringName]([&"lob", &"area"])
+base_damage = 24.0
+cooldown = 5.0
+max_level = 1
+logic_scene = ExtResource("2")
+throw_range = 240.0
+flight_time = 0.55
+level_aoe_radius = Array[float]([130.0, 130.0, 130.0, 130.0, 130.0])
+evolution = 1
+icon_color = Color(1.0, 0.8, 0.3, 1)
