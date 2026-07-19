@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/SkillHUD.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/LevelUpUI.tscn" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/LevelHUD.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SurvivalTimerHUD.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/ui/EvolutionChoiceUI.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PauseMenuUI.tscn" id="9"]
 
 [node name="GameUI" type="CanvasLayer"]
 
@@ -26,3 +27,5 @@
 [node name="LevelHUD" parent="." instance=ExtResource("6")]
 
 [node name="SurvivalTimerHUD" parent="." instance=ExtResource("7")]
+
+[node name="PauseMenuUI" parent="." instance=ExtResource("9")]
