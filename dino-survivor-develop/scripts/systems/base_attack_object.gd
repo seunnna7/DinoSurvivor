@@ -42,6 +42,23 @@ func _deal_aoe_damage(center: Vector2, radius: float, amount: float, hit_callbac
 			if hit_callback.is_valid():
 				hit_callback.call(enemy)
 
+## center를 중심으로 box_rotation만큼 회전된, 크기 full_size(가로/세로)의 사각형 안에 있는
+## 모든 Enemy에게 amount 데미지. _deal_aoe_damage()의 사각형 버전 — 회전된 히트박스(예: 물기)에서 사용.
+func _deal_aoe_damage_box(
+	center: Vector2, box_rotation: float, full_size: Vector2, amount: float, hit_callback: Callable = Callable()
+) -> void:
+	var to_local := Transform2D(box_rotation, center).affine_inverse()
+	var half_extents := full_size * 0.5
+	for node in get_tree().get_nodes_in_group("enemy"):
+		var enemy := node as Enemy
+		if enemy == null:
+			continue
+		var local_pos: Vector2 = to_local * enemy.global_position
+		if abs(local_pos.x) <= half_extents.x and abs(local_pos.y) <= half_extents.y:
+			enemy.take_damage(amount)
+			if hit_callback.is_valid():
+				hit_callback.call(enemy)
+
 ## CollisionShape2D(CircleShape2D) 자식이 있으면 그 반경을 given_radius로 동기화합니다.
 ## sub-resource는 같은 씬을 쓰는 인스턴스끼리 공유되므로, 직접 고치지 않고 복제 후 대입해서
 ## 한 인스턴스의 반경 변경이 다른 인스턴스에 번지는 사고를 방지합니다.
@@ -54,6 +71,17 @@ func _sync_collision_radius(given_radius: float) -> void:
 	var circle := (shape_node.shape as CircleShape2D).duplicate() as CircleShape2D
 	circle.radius = given_radius
 	shape_node.shape = circle
+
+## CollisionShape2D(RectangleShape2D) 자식이 있으면 그 크기를 given_size로 동기화합니다.
+## _sync_collision_radius()와 동일한 이유로 sub-resource를 복제 후 대입합니다.
+## (사각형 히트박스를 이펙트 스프라이트 비율에 맞춰야 하는 경우 사용 — 예: 물기)
+func _sync_collision_rect(given_size: Vector2) -> void:
+	var shape_node := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if shape_node == null or not (shape_node.shape is RectangleShape2D):
+		return
+	var rect := (shape_node.shape as RectangleShape2D).duplicate() as RectangleShape2D
+	rect.size = given_size
+	shape_node.shape = rect
 
 ## 가장 가까운 Enemy를 찾습니다. 없으면 null. 자율 추적형 오브젝트(추적하는 장판 등)에서 사용.
 func _find_nearest_enemy() -> Enemy:
