@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/BiteSkill.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/BiteHitEffect.tscn" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"bite_evo_1"
+display_name = "최상위 포식자"
+species_motif = "티라노사우루스"
+flavor_text = "티라노사우루스의 턱 힘은 나이가 들수록 세진다고 합니다. 이쯤되면 물기가 아니라 그냥 압사 아닌가요? 한 입에 (데미지_숫자)의 피해를 입힙니다."
+tags = Array[StringName](["suction"])
+base_damage = 32.0
+cooldown = 1.0
+max_level = 1
+effect_scene = ExtResource("3")
+logic_scene = ExtResource("2")
+icon_color = Color(1.0, 0.65, 0.05, 1)

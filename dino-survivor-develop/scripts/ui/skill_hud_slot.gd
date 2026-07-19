@@ -5,9 +5,12 @@ extends VBoxContainer
 @onready var icon: ColorRect = $Icon
 @onready var level_label: Label = $LevelLabel
 
+var _max_level: int = 5
+
 func setup(data: SkillData, level: int) -> void:
 	icon.color = data.icon_color
+	_max_level = data.max_level
 	set_level(level)
 
 func set_level(level: int) -> void:
-	level_label.text = "Lv.%d" % level
+	level_label.text = "Lv.Max" if level >= _max_level else "Lv.%d" % level

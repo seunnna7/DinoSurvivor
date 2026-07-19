@@ -24,6 +24,8 @@ func acquire_skill(id: StringName) -> void:
 	if RunState.is_skill_owned(id):
 		RunState.skill_levels[id] += 1
 		RunState.skill_leveled_up.emit(data, RunState.skill_levels[id])
+		if RunState.skill_levels[id] >= data.max_level and not data.evolutions.is_empty():
+			RunState.evolution_ready.emit(data)
 		return
 
 	RunState.skill_levels[id] = 1
@@ -34,3 +36,20 @@ func acquire_skill(id: StringName) -> void:
 		instance.setup(data, owner_body)
 		_instances[id] = instance
 	RunState.skill_acquired.emit(data)
+
+## 진화 선택 UI에서 하나를 고르면 호출됩니다. 베이스 스킬을 슬롯에서 제거하고
+## 그 자리를 진화형 스킬로 대체합니다 (기획서 4.3).
+func evolve_skill(base_id: StringName, evolution_data: SkillData) -> void:
+	if _instances.has(base_id):
+		_instances[base_id].queue_free()
+		_instances.erase(base_id)
+	RunState.remove_skill(base_id)
+
+	RunState.skill_levels[evolution_data.id] = evolution_data.max_level
+	RunState.owned_skills.append(evolution_data)
+	if evolution_data.logic_scene != null:
+		var instance: SkillInstanceBase = evolution_data.logic_scene.instantiate()
+		add_child(instance)
+		instance.setup(evolution_data, owner_body)
+		_instances[evolution_data.id] = instance
+	RunState.skill_acquired.emit(evolution_data)

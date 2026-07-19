@@ -9,6 +9,7 @@ var _slots: Dictionary = {}  # StringName(스킬 id) -> SkillHUDSlot
 func _ready() -> void:
 	RunState.skill_acquired.connect(_on_skill_acquired)
 	RunState.skill_leveled_up.connect(_on_skill_leveled_up)
+	RunState.skill_removed.connect(_on_skill_removed)
 	for data in RunState.owned_skills:
 		_add_slot(data)
 
@@ -28,3 +29,8 @@ func _on_skill_acquired(data: SkillData) -> void:
 func _on_skill_leveled_up(data: SkillData, new_level: int) -> void:
 	if _slots.has(data.id):
 		_slots[data.id].set_level(new_level)
+
+func _on_skill_removed(id: StringName) -> void:
+	if _slots.has(id):
+		_slots[id].queue_free()
+		_slots.erase(id)

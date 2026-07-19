@@ -2,6 +2,8 @@ extends Node
 ## Autoload 싱글톤. data/skills/ 안의 모든 SkillData를 자동으로 로드해
 ## 어디서든 조회할 수 있게 해줍니다. 새 스킬 .tres 파일을 추가해도
 ## 이 스크립트를 건드릴 필요가 없습니다 (폴더를 스캔하기 때문).
+## data/skill_evolutions/ 는 의도적으로 스캔하지 않습니다 — 진화형 스킬은
+## 공용 풀에 노출되지 않고 오직 베이스 SkillData.evolutions를 통해서만 참조됩니다 (기획서 4.3).
 
 const SKILLS_PATH := "res://data/skills/"
 

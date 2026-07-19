@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/skills/MaceSkill.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/skills/MaceImpactEffect.tscn" id="3"]
+[ext_resource type="Script" uid="uid://drcumpt1lyw1e" path="res://resource_types/stat_modifier_data.gd" id="4_jjn0y"]
 
 [resource]
 script = ExtResource("1")
@@ -10,8 +11,7 @@ id = &"mace"
 display_name = "철퇴"
 species_motif = "안킬로사우루스"
 flavor_text = "휘두르는 데 0.4초, 그 안에 있던 모든 것이 후회하는 데는 0초. 충격과 함께 (데미지_숫자)의 피해를 줍니다."
-tags = Array[StringName](["melee"])
-cooldown = 5.0
+tags = Array[StringName]([&"melee"])
 effect_scene = ExtResource("3")
 logic_scene = ExtResource("2")
 icon_color = Color(0.9, 0.5, 0.1, 1)

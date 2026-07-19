@@ -6,6 +6,8 @@ extends Node
 signal leveled_up(new_level: int)                          ## 레벨업 UI가 이 신호를 받아 카드 팝업을 띄움
 signal skill_acquired(data: SkillData)                      ## 스킬 신규 획득 (Lv.1) — HUD가 슬롯을 새로 추가
 signal skill_leveled_up(data: SkillData, new_level: int)    ## 이미 보유한 스킬 레벨업 — HUD가 레벨 텍스트만 갱신
+signal skill_removed(id: StringName)                        ## 진화로 베이스 스킬이 슬롯에서 사라질 때 — HUD가 슬롯 제거
+signal evolution_ready(base_data: SkillData)                ## 스킬이 만렙+진화 옵션 보유 상태가 됐을 때 — EvolutionChoiceUI가 선택 팝업을 띄움
 signal gold_changed(new_total: int)                         ## 골드 HUD가 이 신호를 받아 숫자를 갱신
 signal experience_changed(current: int, needed: int)        ## 레벨/경험치 HUD가 이 신호를 받아 게이지 바를 갱신
 
@@ -21,6 +23,7 @@ var owned_skills: Array[SkillData] = []  ## HUD 표시 순서 (획득한 순서)
 var skill_levels: Dictionary = {}         ## StringName(스킬 id) -> int(레벨)
 
 var is_game_over: bool = false  ## true인 동안 레벨업 카드 팝업 등 다른 일시정지 UI가 뜨지 않도록 막는 용도
+var has_pending_evolution: bool = false  ## 진화 선택 UI가 떠 있는 동안 true — 레벨업 카드가 뒤이어 일시정지를 풀지 않도록 막는 가드
 
 func reset_run() -> void:
 	elapsed_time = 0.0
@@ -30,6 +33,7 @@ func reset_run() -> void:
 	owned_skills.clear()
 	skill_levels.clear()
 	is_game_over = false
+	has_pending_evolution = false
 
 ## 경험치 젬 등에서 호출. 임계값을 넘으면 레벨업하고 leveled_up을 emit합니다.
 ## 한 번에 여러 레벨을 넘을 수도 있어 while로 처리합니다.
@@ -59,6 +63,15 @@ func is_skill_owned(id: StringName) -> bool:
 
 func skill_level(id: StringName) -> int:
 	return skill_levels.get(id, 0)
+
+## 진화 등으로 베이스 스킬이 슬롯에서 사라질 때 호출. skill_removed를 emit해 HUD 슬롯도 정리합니다.
+func remove_skill(id: StringName) -> void:
+	skill_levels.erase(id)
+	for i in range(owned_skills.size()):
+		if owned_skills[i].id == id:
+			owned_skills.remove_at(i)
+			break
+	skill_removed.emit(id)
 
 ## 생존시간(elapsed_time) 등 초 단위 값을 "분:초" 형태(예: 03:45)로 표시할 때 공용으로 사용
 static func format_time(total_seconds: float) -> String:

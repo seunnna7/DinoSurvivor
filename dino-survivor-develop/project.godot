@@ -26,6 +26,7 @@ SpeciesDatabase="*res://autoload/species_database.gd"
 WaveManager="*res://autoload/wave_manager.gd"
 MetaProgress="*res://autoload/meta_progress.gd"
 TagDatabase="*res://autoload/tag_database.gd"
+DevTools="*res://autoload/dev_tools.gd"
 
 [rendering]
 

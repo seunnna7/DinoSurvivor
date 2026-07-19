@@ -27,7 +27,8 @@ func setup(data: SkillData, owned: bool) -> void:
 	description_label.text = data.description()
 	owned_label.visible = owned
 	if owned:
-		owned_label.text = "보유 중 (Lv.%d)" % RunState.skill_level(data.id)
+		var level := RunState.skill_level(data.id)
+		owned_label.text = "보유 중 (Lv.Max)" if level >= data.max_level else "보유 중 (Lv.%d)" % level
 
 func _on_pressed() -> void:
 	selected.emit(_data)

@@ -29,6 +29,9 @@ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문�
 @export var effect_scene: PackedScene  ## 투사체/이펙트 씬 (있는 경우)
 @export var logic_scene: PackedScene   ## 이 스킬의 실제 동작을 구현한 로직 씬 (SkillInstanceBase 상속). 비어있으면 "더미"(UI에만 존재, 실제 동작 없음)
 
+@export_group("진화")
+@export var evolutions: Array[SkillData] = []  ## 이 스킬이 만렙(Lv5)에 도달했을 때 제시할 진화 선택지 (1~3개, 기획서 4.3/4.5). 진화형 SkillData는 이 배열을 가진 "베이스 스킬"과 달리 data/skill_evolutions/ 에 따로 보관하고 max_level=1로 설정 — 공용 풀(SkillDatabase)에는 스캔되지 않음
+
 @export_group("패시브 효과")
 @export var passive_modifiers: Array[StatModifierData] = []  ## category가 PASSIVE일 때만 사용. 각 항목의 stat_id에 점(.)이 있으면 "태그.효과필드"로 그 태그를 가진 액티브 스킬 전체를 겨냥(예: "projectile.range" → 투사체 태그 스킬 전부의 사거리 증가), 없으면 전역 스탯(기획서 6.4) 강화. 특정 스킬 하나를 직접 지정하는 MasteryMilestoneData.target("스킬id.수치필드")과는 좌변 의미가 다름 — 기획서 4.2.1
 

@@ -37,7 +37,9 @@ func _open() -> void:
 	get_tree().paused = true
 
 func _pick_random_skills(count: int) -> Array[SkillData]:
-	var pool := SkillDatabase.get_common_pool_skills()
+	var pool := SkillDatabase.get_common_pool_skills().filter(
+		func(data: SkillData) -> bool: return RunState.skill_level(data.id) < data.max_level
+	)
 	pool.shuffle()
 	var picked: Array[SkillData] = []
 	for i in range(min(count, pool.size())):
@@ -47,7 +49,8 @@ func _pick_random_skills(count: int) -> Array[SkillData]:
 func _on_card_selected(data: SkillData) -> void:
 	_get_skill_controller().acquire_skill(data.id)
 	visible = false
-	get_tree().paused = false
+	if not RunState.has_pending_evolution:
+		get_tree().paused = false
 
 func _get_skill_controller() -> SkillController:
 	if _skill_controller == null:

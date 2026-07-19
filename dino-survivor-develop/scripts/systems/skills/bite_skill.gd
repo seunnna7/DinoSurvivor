@@ -3,7 +3,7 @@ extends SkillInstanceBase
 ## 사거리 내 가장 가까운 몹 하나를 찾아 데미지를 입힙니다.
 ## 지금은 즉시 데미지만 처리. "흡입" 연출(끌어당기기)은 이후 폴리싱 단계에서 추가 예정.
 
-const RANGE := 30.0
+const RANGE := 80.0
 
 func setup(data: SkillData, body: Node2D) -> void:
 	super.setup(data, body)

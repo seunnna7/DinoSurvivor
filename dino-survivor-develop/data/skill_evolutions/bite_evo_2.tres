@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"bite_evo_2"
+display_name = "폭군의 포효"
+species_motif = "티라노사우루스"
+flavor_text = "티라노사우루스의 포효는 반경 수십 미터의 초식동물을 얼어붙게 했다고 합니다. 요즘 회의실에서도 통할 것 같은데요? 포효와 함께 (데미지_숫자)의 피해를 주고, 주변 적을 둔화·약화시킵니다."
+tags = Array[StringName](["burst", "debuff"])
+base_damage = 20.0
+cooldown = 4.0
+max_level = 1
+icon_color = Color(0.55, 0.15, 0.65, 1)
