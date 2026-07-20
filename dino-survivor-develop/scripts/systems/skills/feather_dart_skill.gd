@@ -59,6 +59,7 @@ func _spawn_dart(from_position: Vector2, aim_dir: Vector2, fdata: FeatherDartDat
 	var dart: FeatherDartProjectile = PROJECTILE_SCENE.instantiate()
 	owner_body.get_parent().add_child(dart)
 	dart.damage = _leveled_damage()
+	dart.knockback_distance = fdata.knockback_distance
 	dart.speed = DART_SPEED
 	dart.max_distance = fdata.range_for_level(level)
 	dart.pierce_enabled = fdata.pierce_for_level(level)

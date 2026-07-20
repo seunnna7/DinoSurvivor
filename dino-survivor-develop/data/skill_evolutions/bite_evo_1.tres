@@ -1,20 +1,22 @@
-[gd_resource type="Resource" script_class="MeleeSkillData" format=3]
+[gd_resource type="Resource" script_class="MeleeSkillData" format=3 uid="uid://dey2tq7ojgg01"]
 
-[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/skills/BiteSkill.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/skills/BiteHitEffect.tscn" id="3"]
-[ext_resource type="Script" path="res://resource_types/melee_skill_data.gd" id="4"]
+[ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://c3s4lcggsl7e6" path="res://scenes/skills/BiteSkill.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://ctllic6uoe7cf" path="res://scenes/skills/BiteHitEffect.tscn" id="3"]
+[ext_resource type="Script" uid="uid://bjv6bfpucdas5" path="res://resource_types/melee_skill_data.gd" id="4"]
+[ext_resource type="Script" uid="uid://drcumpt1lyw1e" path="res://resource_types/stat_modifier_data.gd" id="4_uxm04"]
 
 [resource]
 script = ExtResource("4")
+level_damage = Array[float]([1.0])
 id = &"bite_evo_1"
 display_name = "최상위 포식자"
 species_motif = "티라노사우루스"
 flavor_text = "티라노사우루스의 턱 힘은 나이가 들수록 세진다고 합니다. 이쯤되면 물기가 아니라 그냥 압사 아닌가요? 한 입에 (데미지_숫자)의 피해를 입힙니다."
-tags = Array[StringName](["suction"])
+tags = Array[StringName]([&"suction"])
 base_damage = 32.0
-cooldown = 1.0
 max_level = 1
+knockback_distance = 0.1
 effect_scene = ExtResource("3")
 logic_scene = ExtResource("2")
-icon_color = Color(1.0, 0.65, 0.05, 1)
+icon_color = Color(1, 0.65, 0.05, 1)

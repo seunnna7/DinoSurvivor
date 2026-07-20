@@ -12,6 +12,7 @@ flavor_text = "커도 너무 큰 알입니다. 대신 그만큼 오래 품어야
 tags = Array[StringName]([&"lob", &"area"])
 base_damage = 24.0
 cooldown = 5.0
+knockback_distance = 0.3
 max_level = 1
 logic_scene = ExtResource("2")
 throw_range = 240.0

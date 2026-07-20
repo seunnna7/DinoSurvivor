@@ -13,6 +13,7 @@ unlock_time = 180.0
 max_health = 800.0
 move_speed = 50.0
 contact_damage = 20.0
+knockback_resistance = 1.0
 visual_scale = 2.5
 visual_color = Color(0.4, 0.05, 0.05, 1)
 loot_table = ExtResource("2")

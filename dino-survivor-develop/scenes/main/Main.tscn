@@ -8,11 +8,26 @@
 [node name="Main" type="Node2D" unique_id=1919807449]
 script = ExtResource("3_main")
 
-[node name="GridBackground" type="Node2D" parent="." unique_id=1742934295]
+[node name="GameLayer" type="CanvasLayer" parent="."]
+
+[node name="GameViewportContainer" type="SubViewportContainer" parent="GameLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_filter = 1
+stretch = true
+stretch_shrink = 3
+
+[node name="GameWorld" type="SubViewport" parent="GameLayer/GameViewportContainer"]
+size = Vector2i(640, 360)
+
+[node name="GridBackground" type="Node2D" parent="GameLayer/GameViewportContainer/GameWorld" unique_id=1742934295]
 script = ExtResource("2_grid")
 
-[node name="Player" parent="." unique_id=801142140 instance=ExtResource("1_player")]
+[node name="Player" parent="GameLayer/GameViewportContainer/GameWorld" unique_id=801142140 instance=ExtResource("1_player")]
 
-[node name="EnemyContainer" type="Node2D" parent="." unique_id=654975107]
+[node name="EnemyContainer" type="Node2D" parent="GameLayer/GameViewportContainer/GameWorld" unique_id=654975107]
 
 [node name="GameUI" parent="." unique_id=1785701817 instance=ExtResource("4_ui")]

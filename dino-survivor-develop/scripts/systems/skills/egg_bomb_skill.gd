@@ -16,6 +16,7 @@ func _fire() -> void:
 
 	var egg: EggBombProjectile = PROJECTILE_SCENE.instantiate()
 	egg.damage = _leveled_damage()
+	egg.knockback_distance = data.knockback_distance
 	egg.flight_time = data.flight_time
 	egg.aoe_radius = data.aoe_radius_for_level(level)
 	egg.evolution = data.evolution

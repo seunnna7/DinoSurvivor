@@ -25,6 +25,12 @@ const DAMAGE_PLACEHOLDER := "(데미지_숫자)"  ## flavor_text 안에 이 문�
 @export var cooldown: float = 1.0
 @export var max_level: int = 5  ## 진화(만렙) 기준 (기획서 4.3)
 
+@export_group("넉백")
+## 캐릭터 한 칸(32px)을 1.0 기준으로 한 비율. 0 = 넉백 없음. Damage/Hitbox와 완전히 독립된 값이라
+## 서로 영향을 주지 않음(예: 고데미지+넉백없음, 저데미지+강한넉백 둘 다 표현 가능). 실제 px 거리/속도/
+## 지속시간은 KnockbackSystem이 적 knockback_resistance를 반영해 계산 — 여기엔 비율만 적어두면 됨.
+@export var knockback_distance: float = 0.0
+
 @export_group("씬 참조")
 @export var effect_scene: PackedScene  ## 투사체/이펙트 씬 (있는 경우)
 @export var logic_scene: PackedScene   ## 이 스킬의 실제 동작을 구현한 로직 씬 (SkillInstanceBase 상속). 비어있으면 "더미"(UI에만 존재, 실제 동작 없음)

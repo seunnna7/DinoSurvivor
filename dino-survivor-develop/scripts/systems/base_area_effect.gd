@@ -47,7 +47,7 @@ func _on_hit_enemy(enemy: Enemy) -> void:
 	if tick_interval > 0.0:
 		_hit_timers[enemy] = tick_interval
 	else:
-		enemy.take_damage(damage)
+		enemy.take_damage(damage, knockback_distance, global_position)
 		_on_tick_hit(enemy)
 
 func _on_body_exited(body: Node2D) -> void:
@@ -73,7 +73,7 @@ func _process_ticks(delta: float) -> void:
 		_hit_timers[enemy] -= delta
 		if _hit_timers[enemy] <= 0.0:
 			_hit_timers[enemy] = tick_interval
-			enemy.take_damage(damage)
+			enemy.take_damage(damage, knockback_distance, global_position)
 			_on_tick_hit(enemy)
 
 func _move_toward_nearest_enemy(delta: float) -> void:

@@ -27,6 +27,7 @@ func _scatter_mines() -> void:
 		var mine: EggMine = MINE_SCENE.instantiate()
 		mine.global_position = global_position + offset
 		mine.damage = damage
+		mine.knockback_distance = knockback_distance
 		mine.radius = mine_radius
 		mine.lifetime = mine_lifetime
 		get_parent().add_child(mine)

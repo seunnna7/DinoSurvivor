@@ -15,6 +15,7 @@ flavor_text = "둥지를 지키던 습성이 이렇게 쓰일 줄은 몰랐을 �
 tags = Array[StringName]([&"lob", &"area"])
 base_damage = 18.0
 cooldown = 3.0
+knockback_distance = 0.25
 max_level = 5
 logic_scene = ExtResource("3")
 evolutions = Array[ExtResource("1")]([ExtResource("4"), ExtResource("5")])

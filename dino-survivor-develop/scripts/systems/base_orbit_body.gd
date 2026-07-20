@@ -1,25 +1,28 @@
 class_name BaseOrbitBody
-extends Area2D
+extends BaseAttackObject
 ## 위성 공전형 스킬이 플레이어 주위로 띄우는 오브젝트 하나(예: 골판 두르기의 골판)의
 ## 공통 충돌/반복 타격 로직. BaseOrbitSkill이 이 클래스를 orbit_body_count개 스폰해서
 ## 위치(공전 각도)만 매 프레임 갱신하고, "닿은 적에게 hit_interval마다 반복 데미지"는
-## 여기서 전담합니다.
+## 여기서 전담합니다. damage/knockback_distance는 BaseAttackObject 공통 필드를 그대로 씁니다.
+##
+## "겹쳐있는 동안 hit_interval마다 반복 타격"하는 타이머 방식(_hit_timers)은 BaseAreaEffect의
+## tick_interval 모드와 개념이 겹치지만, 지속시간 기반 소멸(duration/fade)이 없는 상시형이라
+## 지금은 별도로 유지합니다(통합은 넉백과 무관한 별개 리팩터 주제).
 ##
 ## 새 위성형 스킬의 오브젝트는 이 클래스를 상속해서 시각 요소(씬의 자식 Polygon2D 등)만
 ## 다르게 구성하면 됩니다 — 충돌/타격 코드를 새로 작성할 필요가 없습니다.
 
-var damage: float = 0.0
 var hit_interval: float = 0.4
 
 var _hit_timers: Dictionary = {}  ## Enemy -> float(다음 타격까지 남은 시간)
 
 func _ready() -> void:
-	body_entered.connect(_on_body_entered)
+	super._ready()
 	body_exited.connect(_on_body_exited)
 
-func _on_body_entered(body: Node2D) -> void:
-	if body is Enemy:
-		_hit_timers[body] = 0.0  # 닿는 즉시 1회 타격
+## 닿는 즉시 1회 타격 등록(실제 타격은 _physics_process의 타이머 루프에서).
+func _on_hit_enemy(enemy: Enemy) -> void:
+	_hit_timers[enemy] = 0.0
 
 func _on_body_exited(body: Node2D) -> void:
 	_hit_timers.erase(body)
@@ -31,5 +34,5 @@ func _physics_process(delta: float) -> void:
 			continue
 		_hit_timers[enemy] -= delta
 		if _hit_timers[enemy] <= 0.0:
-			enemy.take_damage(damage)
+			enemy.take_damage(damage, knockback_distance, global_position)
 			_hit_timers[enemy] = hit_interval

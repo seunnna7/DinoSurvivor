@@ -6,9 +6,9 @@ extends BaseSkill
 ##
 ## MeleeSkillData로 표현되는 것 (전부 레벨별 배열 — 스킬마다 성장 곡선이 다르기 때문):
 ##   - level_range / level_arc_degrees : 사거리와 타격 각도(360 = 원형, 물기 / 90 = 부채꼴, 철퇴)
-##   - level_target_count              : NEAREST_N 모드일 때 동시에 맞는 대상 수(물기: Lv3에 1→2)
-##   - target_mode                     : NEAREST_N(가장 가까운 N체, 물기) / ALL_IN_ARC(범위 전체, 철퇴)
 ##   - hit_delay                       : 판정까지의 선딜레이(예: 철퇴가 휘둘러지는 0.4초, 레벨 무관)
+## 판정 범위(원 또는 부채꼴) 안에 있는 적은 전부 한 번에 타격합니다 — 단일/소수 대상만 골라
+## 맞히는 모드는 없습니다.
 ##
 ## 새 근접 스킬을 추가하려면:
 ##   1. data/skills/에 MeleeSkillData .tres 추가 (레벨별 배열만 채우면 끝, 새 스크립트가 필요 없을 수도 있음)
@@ -27,8 +27,8 @@ func _fire() -> void:
 		await get_tree().create_timer(melee_data.hit_delay).timeout
 	var facing := _current_facing()
 	_on_swing(facing)
-	for enemy in _gather_targets(facing):
-		enemy.take_damage(_leveled_damage())
+	for enemy in _enemies_in_arc(facing):
+		enemy.take_damage(_leveled_damage(), skill_data.knockback_distance, owner_body.global_position)
 		_on_hit(enemy)
 
 func _melee_data() -> MeleeSkillData:
@@ -37,19 +37,6 @@ func _melee_data() -> MeleeSkillData:
 ## 플레이어가 바라보는 방향. arc_degrees == 360(전방위)이면 어느 값이어도 판정 결과에 영향 없음.
 func _current_facing() -> Vector2:
 	return owner_body.get("facing_direction")
-
-## target_mode에 따라 "범위 내 전체" 또는 "가장 가까운 적 N체"를 반환.
-func _gather_targets(facing: Vector2) -> Array[Enemy]:
-	var melee_data := _melee_data()
-	var in_arc := _enemies_in_arc(facing)
-	if melee_data.target_mode == MeleeSkillData.TargetMode.ALL_IN_ARC:
-		return in_arc
-	in_arc.sort_custom(_by_distance_to_owner)
-	return in_arc.slice(0, melee_data.target_count_for_level(level))
-
-func _by_distance_to_owner(a: Enemy, b: Enemy) -> bool:
-	var origin := owner_body.global_position
-	return origin.distance_to(a.global_position) < origin.distance_to(b.global_position)
 
 ## 사거리/각도 판정을 통과하는 모든 Enemy.
 func _enemies_in_arc(facing: Vector2) -> Array[Enemy]:

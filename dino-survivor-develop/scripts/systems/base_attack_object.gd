@@ -15,6 +15,7 @@ extends Area2D
 ## 완전히 새로운 형태(예: 레이저 빔)라면 이 클래스를 직접 상속해서 필요한 걸 새로 구현하세요.
 
 @export var damage: float = 10.0
+@export var knockback_distance: float = 0.0  ## 캐릭터 한 칸(32px) 기준 비율. 0 = 넉백 없음(SkillData.knockback_distance 참고)
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
@@ -24,26 +25,28 @@ func _on_body_entered(body: Node2D) -> void:
 	if enemy != null:
 		_on_hit_enemy(enemy)
 
-## 하위 클래스 오버라이드용. 기본 동작: 데미지만 주고 끝(넉백/출혈 등 상태이상 없음).
-## 상태이상이 있는 공격(철퇴의 넉백, 무리 사냥 진화의 출혈 등)은 이 함수를 오버라이드해서
+## 하위 클래스 오버라이드용. 기본 동작: 데미지 + (있다면) 넉백만 주고 끝(출혈 등 상태이상 없음).
+## 상태이상이 있는 공격(무리 사냥 진화의 출혈 등)은 이 함수를 오버라이드해서
 ## super._on_hit_enemy(enemy)로 데미지를 준 뒤 상태이상을 추가로 적용하세요.
 func _on_hit_enemy(enemy: Enemy) -> void:
-	enemy.take_damage(damage)
+	enemy.take_damage(damage, knockback_distance, global_position)
 
-## 반경 radius 안의 모든 Enemy에게 amount 데미지. 폭발/장판형 AOE 로직에서 공용으로 사용.
-## hit_callback을 주면 데미지 적용 후 각 대상에 대해 추가로 호출(상태이상 부여 등에 사용).
+## 반경 radius 안의 모든 Enemy에게 amount 데미지 + (있다면) 이 오브젝트의 knockback_distance만큼 넉백.
+## 폭발/장판형 AOE 로직에서 공용으로 사용. hit_callback을 주면 데미지 적용 후 각 대상에 대해
+## 추가로 호출(상태이상 부여 등에 사용).
 func _deal_aoe_damage(center: Vector2, radius: float, amount: float, hit_callback: Callable = Callable()) -> void:
 	for node in get_tree().get_nodes_in_group("enemy"):
 		var enemy := node as Enemy
 		if enemy == null:
 			continue
 		if center.distance_to(enemy.global_position) <= radius:
-			enemy.take_damage(amount)
+			enemy.take_damage(amount, knockback_distance, center)
 			if hit_callback.is_valid():
 				hit_callback.call(enemy)
 
 ## center를 중심으로 box_rotation만큼 회전된, 크기 full_size(가로/세로)의 사각형 안에 있는
-## 모든 Enemy에게 amount 데미지. _deal_aoe_damage()의 사각형 버전 — 회전된 히트박스(예: 물기)에서 사용.
+## 모든 Enemy에게 amount 데미지 + (있다면) 넉백. _deal_aoe_damage()의 사각형 버전 — 회전된
+## 히트박스(예: 물기)에서 사용.
 func _deal_aoe_damage_box(
 	center: Vector2, box_rotation: float, full_size: Vector2, amount: float, hit_callback: Callable = Callable()
 ) -> void:
@@ -55,7 +58,7 @@ func _deal_aoe_damage_box(
 			continue
 		var local_pos: Vector2 = to_local * enemy.global_position
 		if abs(local_pos.x) <= half_extents.x and abs(local_pos.y) <= half_extents.y:
-			enemy.take_damage(amount)
+			enemy.take_damage(amount, knockback_distance, center)
 			if hit_callback.is_valid():
 				hit_callback.call(enemy)
 

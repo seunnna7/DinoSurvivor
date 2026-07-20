@@ -1,8 +1,9 @@
 class_name MaceSkill
 extends BaseMeleeSkill
 ## 철퇴 (광역 후려치기): 기본형/형태 A(전방향)는 플레이어 기준 부채꼴(또는 360도) 범위를
-## 휘둘러 적을 전부 타격 + 넉백. 선딜레이/각도 판정/전체 대상 타격/데미지는 전부
-## BaseMeleeSkill + MeleeSkillData가 처리하므로, 여기서는 잔상 이펙트 스폰과 넉백만 추가합니다.
+## 휘둘러 적을 전부 타격. 선딜레이/각도 판정/전체 대상 타격/데미지/넉백은 전부
+## BaseMeleeSkill + MeleeSkillData(및 SkillData.knockback_distance)가 처리하므로,
+## 여기서는 잔상 이펙트 스폰만 추가합니다.
 ##
 ## 형태 B(내려찍기)는 "휘두르기"라는 틀 자체를 벗어나(부채꼴이 아니라 지면 한 점을 내려찍는
 ## 원형 AOE) BaseMeleeSkill의 arc 판정 흐름과 안 맞기 때문에, _fire()를 오버라이드해서
@@ -28,14 +29,6 @@ func _on_swing(facing: Vector2) -> void:
 	effect.facing_angle = facing.angle()
 	owner_body.add_child(effect)
 
-## 실제로 맞은 적마다 호출(기본형/형태 A 공통) — 철퇴다운 넉백을 여기서 부여.
-func _on_hit(enemy: Enemy) -> void:
-	var data := _melee_data() as MaceSkillData
-	var kb_dir := owner_body.global_position.direction_to(enemy.global_position)
-	if kb_dir == Vector2.ZERO:
-		kb_dir = Vector2.RIGHT
-	enemy.apply_knockback(kb_dir, data.knockback_force, data.knockback_duration)
-
 ## 형태 B(내려찍기): 가장 가까운 적의 위치(없으면 바라보는 방향의 사거리 지점)를 내려찍어
 ## 원형 AOE 폭발 + 강한 넉백을 주는 충격파 오브젝트를 스폰합니다.
 func _fire_slam(data: MaceSkillData) -> void:
@@ -51,8 +44,7 @@ func _fire_slam(data: MaceSkillData) -> void:
 	slam.global_position = slam_pos
 	slam.damage = _leveled_damage()
 	slam.radius = data.slam_radius
-	slam.knockback_force = data.slam_knockback_force
-	slam.knockback_duration = data.knockback_duration
+	slam.knockback_distance = skill_data.knockback_distance
 	owner_body.get_parent().add_child(slam)
 
 func _indicator_color() -> Color:

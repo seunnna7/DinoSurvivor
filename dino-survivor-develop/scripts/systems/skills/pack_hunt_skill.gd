@@ -30,6 +30,7 @@ func _spawn_claw_strikes(data: PackHuntData) -> void:
 		var claw: ClawSwipeArea = CLAW_SCENE.instantiate()
 		claw.global_position = _random_position_near_player(data.spawn_radius_around_player)
 		claw.damage = _leveled_damage()
+		claw.knockback_distance = data.knockback_distance
 		claw.radius = data.radius_for_level(level)
 		if data.evolution == PackHuntData.Evolution.BLEED_MULTI:
 			claw.tick_interval = data.multi_hit_tick_interval
@@ -45,6 +46,7 @@ func _spawn_hunting_zone(data: PackHuntData) -> void:
 	var zone: BaseAreaEffect = ZONE_SCENE.instantiate()
 	zone.global_position = _random_position_near_player(data.spawn_radius_around_player)
 	zone.damage = _leveled_damage()
+	zone.knockback_distance = data.knockback_distance
 	zone.radius = data.zone_radius
 	zone.duration = data.zone_duration
 	zone.move_speed = data.zone_move_speed

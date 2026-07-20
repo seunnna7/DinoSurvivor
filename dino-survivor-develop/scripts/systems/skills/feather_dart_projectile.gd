@@ -32,7 +32,7 @@ func _on_travel(_delta: float) -> void:
 func _on_hit_enemy(enemy: Enemy) -> void:
 	if not pierce_enabled:
 		return
-	enemy.take_damage(damage)
+	enemy.take_damage(damage, knockback_distance, global_position)
 
 ## 최종 도착 지점(사거리 소진) AOE. 형태 A(조준타격)는 도착 지점도 2배 데미지가 적용됩니다.
 func _on_range_reached() -> void:

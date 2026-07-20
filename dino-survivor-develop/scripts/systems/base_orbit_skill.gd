@@ -35,6 +35,7 @@ func _process(delta: float) -> void:
 		var angle := _orbit_angle + i * (TAU / _bodies.size())
 		_bodies[i].position = Vector2.RIGHT.rotated(angle) * orbit_data.orbit_radius
 		_bodies[i].damage = _leveled_damage()  # 레벨업으로 데미지가 바뀌면 기존 오브젝트에도 즉시 반영
+		_bodies[i].knockback_distance = skill_data.knockback_distance
 
 ## 현재 레벨에 맞는 오브젝트 개수와 실제 개수를 맞춥니다. 모자라면 새로 스폰, 남으면 정리.
 func _sync_body_count(orbit_data: OrbitSkillData) -> void:
@@ -42,6 +43,7 @@ func _sync_body_count(orbit_data: OrbitSkillData) -> void:
 	while _bodies.size() < target_count:
 		var orbit_body := _create_orbit_body()
 		orbit_body.damage = _leveled_damage()
+		orbit_body.knockback_distance = skill_data.knockback_distance
 		orbit_body.hit_interval = orbit_data.hit_interval
 		owner_body.add_child.call_deferred(orbit_body)  # setup()이 트리 구성 중 호출될 수 있어 add_child를 지연
 		_bodies.append(orbit_body)

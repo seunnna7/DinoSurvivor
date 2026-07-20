@@ -47,7 +47,7 @@ func _on_body_entered(body: Node2D) -> void:
 ## 기본 동작: 데미지를 입히고 즉시 소멸(비관통 투사체). 관통형은 이 함수를 오버라이드해서
 ## _despawn() 호출을 생략하면 됩니다(깃털 다트가 이렇게 함).
 func _on_hit_enemy(enemy: Enemy) -> void:
-	enemy.take_damage(damage)
+	enemy.take_damage(damage, knockback_distance, global_position)
 	_despawn()
 
 ## 하위 클래스 오버라이드용. 기본 동작: 사거리 소진 시 그냥 소멸(AOE 없음).

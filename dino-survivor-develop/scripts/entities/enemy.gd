@@ -5,7 +5,7 @@ class_name Enemy
 ## 스탯을 코드에 하드코딩하지 않았기 때문에, 새 몹은 코드 수정 없이 데이터 파일만 추가하면 됩니다.
 
 const CONTACT_DAMAGE_INTERVAL := 0.5
-const KNOCKBACK_DECAY := 8.0     ## 넉백 속도가 초당 이 배율로 감쇠 (move_toward 계수)
+const MAX_EXTERNAL_SPEED := 900.0 ## 외력(넉백/견인 등)이 합성돼도 넘지 못하는 속도 상한
 const BLEED_TICK_INTERVAL := 0.5 ## 출혈 데미지가 이 간격으로 나뉘어 들어감
 
 var stage_data: EnemyStageData
@@ -14,8 +14,10 @@ var health: float
 var _player: Node2D
 var _contact_timer: float = 0.0
 
-var _knockback_velocity: Vector2 = Vector2.ZERO
-var _knockback_timer: float = 0.0
+## "적의 의지와 무관하게 강제로 미는" 모든 힘의 공통 상태 — 지금은 넉백만 이 채널을 쓰지만,
+## 나중에 견인/흡입/컨베이어 같은 다른 외력이 생겨도 apply_external_force() 하나로 얹으면 됨.
+var _external_velocity: Vector2 = Vector2.ZERO
+var _external_force_timer: float = 0.0
 
 var _bleed_damage_per_tick: float = 0.0
 var _bleed_timer: float = 0.0
@@ -37,10 +39,11 @@ func setup(data: EnemyStageData) -> void:
 func _physics_process(delta: float) -> void:
 	if _player == null or stage_data == null:
 		return
-	if _knockback_timer > 0.0:
-		_knockback_timer -= delta
-		velocity = _knockback_velocity
-		_knockback_velocity = _knockback_velocity.move_toward(Vector2.ZERO, stage_data.move_speed * KNOCKBACK_DECAY * delta)
+	if _external_force_timer > 0.0:
+		var decay_fraction := clampf(delta / _external_force_timer, 0.0, 1.0)
+		_external_velocity -= _external_velocity * decay_fraction
+		_external_force_timer -= delta
+		velocity = _external_velocity
 	else:
 		velocity = global_position.direction_to(_player.global_position) * stage_data.move_speed
 	move_and_slide()
@@ -53,12 +56,26 @@ func _physics_process(delta: float) -> void:
 
 	_process_bleed(delta)
 
-## 넉백 부여. 넉백 중에는 플레이어를 향한 평소 추적 이동을 멈추고 knockback_velocity를 그대로 씀 —
-## 시간이 지날수록 KNOCKBACK_DECAY 배율로 감속하다 duration 후 평소 추적으로 복귀.
-## 철퇴처럼 밀어내는 공격이 사용 (기획 3.2: 상태이상 전달은 BaseAttackObject._on_hit_enemy 훅에서).
-func apply_knockback(direction: Vector2, force: float, duration: float = 0.25) -> void:
-	_knockback_velocity = direction.normalized() * force
-	_knockback_timer = duration
+## 외력(external force) 부여. 넉백뿐 아니라 나중에 추가될 견인/흡입/컨베이어 등 "적의 의지와
+## 무관하게 강제로 미는" 모든 효과의 공통 진입점. 여러 외력이 동시에 걸리면 벡터 합으로
+## 자연스럽게 합성되고(덮어쓰지 않음), MAX_EXTERNAL_SPEED로만 클램프합니다. 지속시간은 더 긴
+## 쪽을 우선(기존 힘이 아직 안 끝났는데 더 짧은 새 힘이 덮어써서 일찍 끝나버리지 않도록).
+## 외력이 걸린 동안에는 평소 추적 이동을 멈추고 이 힘을 그대로 쓰다, 끝나면 즉시 복귀합니다.
+func apply_external_force(added_velocity: Vector2, duration: float) -> void:
+	_external_velocity = (_external_velocity + added_velocity).limit_length(MAX_EXTERNAL_SPEED)
+	_external_force_timer = maxf(_external_force_timer, duration)
+
+## take_damage()가 knockback_distance > 0일 때 호출. 비율 → 저항 적용 실제 px 거리 → 속도
+## 변환은 전부 KnockbackSystem이 계산하고, 여기서는 결과를 external force로 적용만 합니다.
+## 방향은 항상 "공격 중심(source_position) → 적 중심" (Direction Rule과 무관한 별개 규칙).
+func _apply_knockback(knockback_distance: float, source_position: Vector2) -> void:
+	var actual_px := KnockbackSystem.actual_distance_px(knockback_distance, stage_data.knockback_resistance)
+	if actual_px <= 0.0:
+		return
+	var direction := source_position.direction_to(global_position)
+	if direction == Vector2.ZERO:
+		direction = Vector2.RIGHT
+	apply_external_force(direction * KnockbackSystem.initial_speed(actual_px), KnockbackSystem.DURATION)
 
 ## 출혈(지속 데미지) 부여. 이미 걸려 있으면 최신 수치로 덮어씀(중첩 대신 갱신 — 스택 관리는
 ## 필요해지면 Array[Dictionary]로 확장). 무리 사냥 진화 A가 사용.
@@ -85,8 +102,13 @@ func _is_touching_player() -> bool:
 			return true
 	return false
 
-func take_damage(amount: float) -> void:
+## knockback_distance/source_position은 옵션(기본값=넉백 없음) — 공격 데이터에 knockback_distance가
+## 없으면 그냥 데미지만 들어갑니다(넉백은 공격의 선택적 속성). source_position은 "공격 중심"으로,
+## 넉백 방향은 항상 이 지점 → 적 중심입니다.
+func take_damage(amount: float, knockback_distance: float = 0.0, source_position: Vector2 = global_position) -> void:
 	health -= amount
+	if knockback_distance > 0.0:
+		_apply_knockback(knockback_distance, source_position)
 	if health <= 0:
 		_die()
 

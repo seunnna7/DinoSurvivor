@@ -22,6 +22,7 @@ enum Tier {
 @export var max_health: float = 20.0
 @export var move_speed: float = 80.0
 @export var contact_damage: float = 5.0
+@export var knockback_resistance: float = 0.0  ## 0 = 무저항, 1 = 완전 면역(KnockbackSystem이 사용)
 
 @export_group("스폰 규칙")
 @export var spawn_interval: float = 1.5  ## NORMAL/ELITE 전용 (반복 스폰 간격)

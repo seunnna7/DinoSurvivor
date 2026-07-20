@@ -17,5 +17,5 @@ logic_scene = ExtResource("2")
 level_range = Array[float]([140.0, 140.0, 140.0, 140.0, 140.0])
 evolution = 2
 slam_radius = 110.0
-slam_knockback_force = 500.0
+knockback_distance = 0.7
 icon_color = Color(0.8, 0.35, 0.05, 1)

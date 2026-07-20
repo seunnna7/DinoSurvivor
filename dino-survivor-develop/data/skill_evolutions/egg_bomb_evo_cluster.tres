@@ -12,6 +12,7 @@ flavor_text = "한 개로 안 될 것 같으면 여러 개를 뿌리면 됩니�
 tags = Array[StringName]([&"lob", &"area"])
 base_damage = 16.0
 cooldown = 3.2
+knockback_distance = 0.25
 max_level = 1
 logic_scene = ExtResource("2")
 throw_range = 220.0
