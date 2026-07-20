@@ -4,7 +4,7 @@ extends BaseMeleeSkill
 ## Direction Rule: Fixed Direction — 적을 탐색하지 않고, 플레이어가 바라보는 방향
 ## (facing_direction)으로 무조건 발동합니다. MeleeSkillData.range_for_level()은 더 이상
 ## "적 탐지 반경"이 아니라 "플레이어 위치에서 물기 이펙트가 앞으로 얼마나 나가서 스폰되는지"를
-## 뜻하는 값으로 재사용합니다(사거리↔크기 분리 원칙은 그대로 — HITBOX_SIZE는 BiteHitEffect가
+## 뜻하는 값으로 재사용합니다(사거리↔크기 분리 원칙은 그대로 — hitbox_size는 BiteHitEffect가
 ## 따로 들고 있는 고정값).
 ## 스폰 이후에도 owner_body를 넘겨서 BiteHitEffect가 애니메이션이 끝날 때까지 플레이어 위치를
 ## 계속 따라가게 합니다(플레이어가 씹는 도중 움직여도 항상 플레이어 앞에 붙어 있도록). 방향

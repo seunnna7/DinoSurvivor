@@ -22,11 +22,13 @@ extends BaseAttackObject
 ## "사거리"(플레이어 앞으로 얼마나 나가서 스폰될지 정하는 reach, BiteSkill._fire() 담당)와
 ## "이 판정 자체의 물리적 크기"는 서로 다른 개념이라 하나로 묶지 않습니다. 이 노드는 scale을
 ## 건드리지 않고 항상 기준 해상도(scale=1) 그대로 유지합니다 — 스프라이트는 원본 텍스처
-## 픽셀 크기(32x34) 그대로 그려지고, 히트박스는 그와 별개로 HITBOX_SIZE 고정 크기입니다.
+## 픽셀 크기(32x34) 그대로 그려지고, 히트박스는 그와 별개로 hitbox_size 고정 크기입니다.
 
 ## 물기 판정의 물리적 크기(px, 기준 해상도 기준 고정값). 스프라이트 프레임 크기(32x34)와는
 ## 별개 — 실제 "이빨이 맞물리는" 영역만큼만 잡은 값이라 스프라이트보다 작습니다.
-const HITBOX_SIZE := Vector2(120.0, 60.0)
+## _ready()에서 _sync_collision_rect()로 CollisionShape2D에 반영되므로(egg_mine.gd의 radius와
+## 동일한 패턴), 에디터에서 보이는 RectangleShape2D.size도 항상 이 값과 일치해야 합니다.
+@export var hitbox_size: Vector2 = Vector2(60.0, 30.0)
 
 ## 발동 순간에 고정된 방향(플레이어 facing_direction 스냅샷). BiteSkill이 스폰 전에 채워주며,
 ## 발동 이후에는 바뀌지 않습니다(Fixed Direction 규칙 — 방향은 시전 순간에만 결정).
@@ -47,7 +49,7 @@ func _ready() -> void:
 	super._ready()
 	monitoring = false
 	rotation = 0.0
-	_sync_collision_rect(HITBOX_SIZE)
+	_sync_collision_rect(hitbox_size)
 	var flip_h := facing_direction.x > 0.0
 	_top_jaw.flip_h = flip_h
 	_bottom_jaw.flip_h = flip_h
@@ -63,8 +65,9 @@ func _track_owner() -> void:
 	if owner_body != null:
 		global_position = owner_body.global_position + facing_direction * reach
 
+
 ## AnimationPlayer 메서드 콜 트랙 전용 콜백 — "bite" 애니메이션의 입이 닫히는 키프레임에서
-## 정확히 1회 호출됩니다. 그 순간 HITBOX_SIZE 크기의 히트박스 안에 있는 모든 적을 한꺼번에
+## 정확히 1회 호출됩니다. 그 순간 hitbox_size 크기의 히트박스 안에 있는 모든 적을 한꺼번에
 ## 타격하는 광역 판정(회전 없이 축 정렬된 사각형).
 func _on_jaws_closed() -> void:
-	_deal_aoe_damage_box(global_position, 0.0, HITBOX_SIZE, damage)
+	_deal_aoe_damage_box(global_position, 0.0, hitbox_size, damage)
