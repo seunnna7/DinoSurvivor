@@ -5,11 +5,13 @@ extends Node2D
 @export var cell_size: int = 100
 @export var extent: int = 3000
 @export var line_color: Color = Color(1, 1, 1, 0.12)
+@export var bg_color: Color = Color("4a7c59") # 임시 배경색(초록)
 
 func _ready() -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	draw_rect(Rect2(Vector2(-extent, -extent), Vector2(extent, extent) * 2), bg_color)
 	var x := -extent
 	while x <= extent:
 		draw_line(Vector2(x, -extent), Vector2(x, extent), line_color, 2.0)

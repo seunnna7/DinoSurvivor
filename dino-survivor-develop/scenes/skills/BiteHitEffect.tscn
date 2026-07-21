@@ -75,7 +75,6 @@ position = Vector2(-3, -7)
 scale = Vector2(2, 2)
 texture = ExtResource("2")
 hframes = 7
-frame = 3
 
 [node name="BottomJaw" type="Sprite2D" parent="." unique_id=681130657]
 texture_filter = 1
@@ -83,7 +82,6 @@ position = Vector2(-3, -7)
 scale = Vector2(2, 2)
 texture = ExtResource("3")
 hframes = 7
-frame = 3
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1356603430]
 shape = SubResource("RectangleShape2D_bite")

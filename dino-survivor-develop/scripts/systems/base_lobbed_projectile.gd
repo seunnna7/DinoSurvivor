@@ -17,16 +17,39 @@ var target: Vector2 = Vector2.ZERO
 
 var _elapsed: float = 0.0
 var _landed: bool = false
+var _landing_indicators: Array[SkillRangeIndicator] = []
 
 func _ready() -> void:
 	super._ready()
 	monitoring = false  # 비행 중에는 아무것도 타격하지 않음 — 착탄 시에만 _on_landed()로 폭발 판정
 
-## 스폰 직후 호출. 출발지/목표 착탄 지점을 설정.
+## 스폰 직후 호출. 출발지/목표 착탄 지점을 설정하고, 착탄 예정 지점에 데미지 범위를 미리 표시.
 func launch(from_position: Vector2, to_position: Vector2) -> void:
 	origin = from_position
 	target = to_position
 	global_position = origin
+	_show_landing_indicators()
+
+## 착탄 지점(월드 좌표 고정)에 반경 aoe_radius의 데미지 범위 표시. 캐릭터가 이동해도 이 표시는
+## 실제 폭발 위치에 그대로 고정되어야 하므로 owner_body가 아닌 부모(월드) 아래에 붙임.
+## 착탄 시 한 지점이 아니라 여러 지점에 나눠 터지는 하위 클래스(알다발 등)는 오버라이드.
+func _show_landing_indicators() -> void:
+	_add_landing_indicator(target, aoe_radius)
+
+func _add_landing_indicator(pos: Vector2, radius: float) -> void:
+	var indicator := SkillRangeIndicator.new()
+	indicator.radius = radius
+	indicator.ring_color = Color(1.0, 0.25, 0.2, 0.55)
+	indicator.fill_color = Color(1.0, 0.25, 0.2, 0.18)
+	indicator.global_position = pos
+	get_parent().add_child.call_deferred(indicator)
+	_landing_indicators.append(indicator)
+
+func _clear_landing_indicators() -> void:
+	for indicator in _landing_indicators:
+		if is_instance_valid(indicator):
+			indicator.queue_free()
+	_landing_indicators.clear()
 
 func _physics_process(delta: float) -> void:
 	if _landed:
@@ -40,6 +63,7 @@ func _physics_process(delta: float) -> void:
 
 func _land() -> void:
 	_landed = true
+	_clear_landing_indicators()
 	_on_landed()
 
 ## 하위 클래스 오버라이드용. 착탄 시 1회 호출. 기본 동작: 반경 aoe_radius 안의 적에게 폭발 데미지 후 소멸.
