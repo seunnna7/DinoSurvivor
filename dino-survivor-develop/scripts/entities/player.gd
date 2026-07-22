@@ -23,7 +23,7 @@ var is_invincible: bool = false
 var _invincibility_timer: float = 0.0
 var _flicker_timer: float = 0.0
 
-@onready var visual: ColorRect = $Visual
+@onready var visual: AnimatedSprite2D = $Visual
 
 func _ready() -> void:
 	add_to_group("player")  # WaveManager/Enemy가 플레이어를 찾을 때 이 그룹을 사용
@@ -31,6 +31,7 @@ func _ready() -> void:
 	max_health = StatCalculator.compute(StatTypes.DEFAULT_VALUE[&"max_health"], &"max_health", _modifiers())
 	health = max_health
 	health_changed.emit(health, max_health)
+	_update_visual(Vector2.ZERO)
 
 ## 종족 패시브 + 메타 강화에서 나온 StatModifierData를 모아 실제 스탯에 반영.
 ## 지금은 이 둘만 반영하지만, 나중에 스탠스/숙련도도 같은 배열에 더하면 됩니다.
@@ -55,7 +56,16 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if input_dir != Vector2.ZERO:
 		facing_direction = input_dir.normalized()
+	_update_visual(input_dir)
 	_process_invincibility(delta)
+
+## 스프라이트 시트는 왼쪽을 바라보는 기준으로 그려져 있어서, bite_hit_effect.gd와 동일한 규칙으로
+## facing_direction.x가 양수(오른쪽)일 때만 flip_h를 켭니다.
+func _update_visual(input_dir: Vector2) -> void:
+	visual.flip_h = facing_direction.x > 0.0
+	var next_animation: StringName = &"walking" if input_dir != Vector2.ZERO else &"standing"
+	if visual.animation != next_animation:
+		visual.play(next_animation)
 
 func _process_invincibility(delta: float) -> void:
 	if not is_invincible:
