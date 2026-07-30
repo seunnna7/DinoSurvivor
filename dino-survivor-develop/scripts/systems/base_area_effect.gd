@@ -16,6 +16,7 @@ extends BaseAttackObject
 @export var duration: float = 0.6
 @export var tick_interval: float = 0.0  ## 0이면 스폰 시 1회만 타격, >0이면 duration 동안 반복 타격
 @export var move_speed: float = 0.0     ## 0이면 고정, >0이면 가장 가까운 적 쪽으로 이 속도로 이동
+@export var hit_delay: float = 0.0      ## 0이면 스폰 즉시 타격, >0이면 이 시간(초) 뒤에 첫 타격(스윙 애니메이션과 싱크용)
 
 var _elapsed: float = 0.0
 var _hit_timers: Dictionary = {}  ## Enemy -> float(다음 타격까지 남은 시간). tick_interval > 0일 때만 사용.
@@ -23,11 +24,14 @@ var _hit_timers: Dictionary = {}  ## Enemy -> float(다음 타격까지 남은 �
 func _ready() -> void:
 	super._ready()
 	_sync_collision_radius(radius)
-	_strike_all_overlapping()
 	if tick_interval > 0.0:
 		body_exited.connect(_on_body_exited)
 	else:
-		monitoring = false  # 스폰 시 1회 타격 후에는 충돌 판정 종료 — 이후엔 순수 페이드 연출만 남음
+		monitoring = false  # 1회 타격 판정 자체는 물리 신호가 아니라 수동 스캔으로만 하므로 처음부터 꺼둠
+	if hit_delay > 0.0:
+		get_tree().create_timer(hit_delay).timeout.connect(_strike_all_overlapping)
+	else:
+		_strike_all_overlapping()
 
 func _physics_process(delta: float) -> void:
 	_elapsed += delta
