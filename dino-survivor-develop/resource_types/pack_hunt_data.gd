@@ -1,6 +1,6 @@
 class_name PackHuntData
 extends BaseSkillData
-## 무리 사냥 전용 데이터. 발동할 때마다 플레이어 주변 임의의 위치(들)에 발톱 할퀴기
+## 무리 사냥 전용 데이터. 발동할 때마다 화면 안에서 적이 가장 밀집된 지점(들)에 발톱 할퀴기
 ## (ClawSwipeArea, BaseAreaEffect 기반)를 소환합니다.
 
 ## Lv5 만렙 진화 시 형태. NONE = 진화 전(베이스), BLEED_MULTI = 형태 A(비열한 협공, 다단히트+출혈),
@@ -16,7 +16,7 @@ enum Evolution { NONE, BLEED_MULTI, HUNTING_ZONE }
 
 @export_group("연출")
 @export var fade_duration: float = 0.5  ## 기본형: 할퀸 자국이 유지되다 사라지기까지 걸리는 시간
-@export var spawn_radius_around_player: float = 260.0  ## 플레이어 중심 이 반경 안 임의의 위치에 소환
+@export var strike_spread_radius: float = 40.0  ## 밀집 지점 주변에 동시 소환된 발톱 자국끼리 겹치지 않도록 흩뿌리는 반경
 
 @export_group("형태 A: 비열한 협공 전용 (다단히트 + 출혈)")
 @export var multi_hit_tick_interval: float = 0.4  ## 다단히트 간격

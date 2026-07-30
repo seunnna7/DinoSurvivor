@@ -1,29 +1,45 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://qg3my8ocjfy7"]
 
-[ext_resource type="Script" path="res://scripts/systems/skills/claw_swipe_area.gd" id="1"]
+[ext_resource type="Script" uid="uid://bunglvpdct6b1" path="res://scripts/systems/skills/claw_swipe_area.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://cofhso7unygya" path="res://assets/art/pack_hunt_sprite-Sheet.png" id="2"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_claw"]
 radius = 55.0
 
-[node name="ClawSwipeArea" type="Area2D"]
+[sub_resource type="Animation" id="Animation_swipe"]
+resource_name = "swipe"
+length = 0.21
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.18),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_swipe"]
+_data = {
+&"swipe": SubResource("Animation_swipe")
+}
+
+[node name="ClawSwipeArea" type="Area2D" unique_id=1889778808]
 script = ExtResource("1")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1819208274]
+position = Vector2(99, 0)
 shape = SubResource("CircleShape2D_claw")
 
-[node name="Slash1" type="Polygon2D" parent="."]
-position = Vector2(-15, -15)
-rotation = -0.7854
-polygon = PackedVector2Array(-25, -3, 25, -3, 25, 3, -25, 3)
-color = Color(0.9, 0.2, 0.2, 0.85)
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2097958806]
+texture_filter = 1
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("2")
+hframes = 7
+frame = 6
 
-[node name="Slash2" type="Polygon2D" parent="."]
-rotation = -0.7854
-polygon = PackedVector2Array(-25, -3, 25, -3, 25, 3, -25, 3)
-color = Color(0.9, 0.2, 0.2, 0.85)
-
-[node name="Slash3" type="Polygon2D" parent="."]
-position = Vector2(15, 15)
-rotation = -0.7854
-polygon = PackedVector2Array(-25, -3, 25, -3, 25, 3, -25, 3)
-color = Color(0.9, 0.2, 0.2, 0.85)
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=73222755]
+libraries/ = SubResource("AnimationLibrary_swipe")
