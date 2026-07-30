@@ -2,6 +2,43 @@
 
 [ext_resource type="Script" uid="uid://berbss44ehttb" path="res://resource_types/enemy_stage_data.gd" id="1"]
 [ext_resource type="Resource" uid="uid://7bhjjtb0cnk4" path="res://data/loot_tables/normal_mob_loot.tres" id="2"]
+[ext_resource type="Texture2D" uid="uid://dcxpcli7mxxim" path="res://assets/art/enemy_mice.png" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mouse_0"]
+atlas = ExtResource("3")
+region = Rect2(0, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mouse_1"]
+atlas = ExtResource("3")
+region = Rect2(24, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mouse_2"]
+atlas = ExtResource("3")
+region = Rect2(48, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mouse_3"]
+atlas = ExtResource("3")
+region = Rect2(72, 0, 24, 24)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_mouse"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mouse_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mouse_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mouse_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mouse_3")
+}],
+"loop": 1,
+"name": &"walk",
+"speed": 8.0
+}]
 
 [resource]
 script = ExtResource("1")
@@ -12,4 +49,5 @@ move_speed = 90.0
 contact_damage = 4.0
 visual_scale = 0.8
 visual_color = Color(0.55, 0.5, 0.45, 1)
+sprite_frames = SubResource("SpriteFrames_mouse")
 loot_table = ExtResource("2")

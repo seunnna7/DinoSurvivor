@@ -32,6 +32,7 @@ enum Tier {
 @export_group("비주얼 (임시 도형)")
 @export var visual_scale: float = 1.0
 @export var visual_color: Color = Color(0.75, 0.2, 0.2, 1)
+@export var sprite_frames: SpriteFrames  ## 지정하면 임시 도형 대신 이 스프라이트 애니메이션을 사용
 
 @export_group("드랍")
 @export var loot_table: LootTable

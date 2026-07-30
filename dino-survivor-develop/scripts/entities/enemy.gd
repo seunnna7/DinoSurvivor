@@ -13,6 +13,7 @@ var health: float
 
 var _player: Node2D
 var _contact_timer: float = 0.0
+var _sprite: AnimatedSprite2D
 
 ## "적의 의지와 무관하게 강제로 미는" 모든 힘의 공통 상태 — 지금은 넉백만 이 채널을 쓰지만,
 ## 나중에 견인/흡입/컨베이어 같은 다른 외력이 생겨도 apply_external_force() 하나로 얹으면 됨.
@@ -36,7 +37,17 @@ func setup(data: EnemyStageData) -> void:
 	health = data.max_health
 	scale *= data.visual_scale
 	var visual := get_node_or_null("Visual")
-	if visual != null:
+	_sprite = get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+	if data.sprite_frames != null and _sprite != null:
+		_sprite.sprite_frames = data.sprite_frames
+		_sprite.visible = true
+		# 콜리전/이동에 쓰이는 몸체 scale은 visual_scale만큼 줄어드니, 스프라이트만 반대로
+		# 키워서 화면에는 원본 png 픽셀 크기 그대로 보이게 함
+		_sprite.scale = Vector2.ONE / data.visual_scale
+		_sprite.play(data.sprite_frames.get_animation_names()[0])
+		if visual != null:
+			visual.visible = false
+	elif visual != null:
 		visual.color = data.visual_color
 
 func _physics_process(delta: float) -> void:
@@ -49,6 +60,8 @@ func _physics_process(delta: float) -> void:
 		velocity = _external_velocity
 	else:
 		velocity = global_position.direction_to(_player.global_position) * stage_data.move_speed * _slow_multiplier
+	if velocity.x != 0.0:
+		_update_facing(velocity.x)
 	move_and_slide()
 
 	_contact_timer -= delta
@@ -59,6 +72,11 @@ func _physics_process(delta: float) -> void:
 
 	_process_bleed(delta)
 	_process_slow(delta)
+
+## 스프라이트 원본이 왼쪽을 보고 있으므로, 오른쪽으로 이동할 때만 뒤집는다.
+func _update_facing(vx: float) -> void:
+	if _sprite != null:
+		_sprite.flip_h = vx > 0.0
 
 ## 외력(external force) 부여. 넉백뿐 아니라 나중에 추가될 견인/흡입/컨베이어 등 "적의 의지와
 ## 무관하게 강제로 미는" 모든 효과의 공통 진입점. 여러 외력이 동시에 걸리면 벡터 합으로
