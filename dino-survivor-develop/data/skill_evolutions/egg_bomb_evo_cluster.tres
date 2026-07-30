@@ -1,25 +1,24 @@
-[gd_resource type="Resource" script_class="EggBombData" format=3]
+[gd_resource type="Resource" script_class="EggBombData" format=3 uid="uid://cwupp3upuwr3f"]
 
-[ext_resource type="Script" path="res://resource_types/egg_bomb_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://dao5bgrouls35" path="res://resource_types/egg_bomb_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1_kaou0"]
 [ext_resource type="PackedScene" path="res://scenes/skills/EggBombSkill.tscn" id="2"]
+[ext_resource type="Script" uid="uid://drcumpt1lyw1e" path="res://resource_types/stat_modifier_data.gd" id="3_mc55v"]
 
 [resource]
 script = ExtResource("1")
+evolution = 2
+mine_count = 6
+mine_scatter_radius = 80.0
+mine_radius = 34.0
 id = &"egg_bomb_evo_cluster"
 display_name = "알다발"
 species_motif = "마이아사우라"
 flavor_text = "한 개로 안 될 것 같으면 여러 개를 뿌리면 됩니다. 착탄 지점 주변에 미니 알들이 흩어져 자리 잡고, 밟은 적에게 (데미지_숫자)의 피해를 주며 개별적으로 터집니다."
 tags = Array[StringName]([&"lob", &"area"])
 base_damage = 16.0
-cooldown = 3.2
-knockback_distance = 0.25
+cooldown = 2.4
 max_level = 1
+knockback_distance = 0.25
 logic_scene = ExtResource("2")
-throw_range = 220.0
-flight_time = 0.5
-evolution = 2
-mine_count = 6
-mine_scatter_radius = 80.0
-mine_radius = 34.0
-mine_lifetime = 6.0
 icon_color = Color(0.9, 0.75, 0.35, 1)

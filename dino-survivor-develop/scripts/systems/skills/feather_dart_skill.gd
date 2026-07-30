@@ -54,6 +54,11 @@ func _fire_cross_strike(fdata: FeatherDartData, aim_dir: Vector2) -> void:
 	right_dart.cross_point = cross_point
 	right_dart.cross_damage_multiplier = fdata.cross_damage_multiplier
 
+## Lv4에서 쿨타임이 감소(연사력 강화)하도록, 데이터에 적힌 레벨별 배율을 cooldown에 곱함.
+func _leveled_cooldown() -> float:
+	var fdata := skill_data as FeatherDartData
+	return fdata.cooldown * fdata.cooldown_multiplier_for_level(level)
+
 ## 공통 스폰 로직: 투사체 인스턴스를 만들고 레벨 기반 공용 수치(데미지/사거리/관통/AOE)를 채운 뒤 발사.
 func _spawn_dart(from_position: Vector2, aim_dir: Vector2, fdata: FeatherDartData) -> FeatherDartProjectile:
 	var dart: FeatherDartProjectile = PROJECTILE_SCENE.instantiate()

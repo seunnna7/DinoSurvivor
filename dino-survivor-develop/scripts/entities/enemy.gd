@@ -23,6 +23,9 @@ var _bleed_damage_per_tick: float = 0.0
 var _bleed_timer: float = 0.0
 var _bleed_tick_timer: float = 0.0
 
+var _slow_multiplier: float = 1.0 ## 이동속도에 곱해지는 배율. 1.0 = 감속 없음(기본)
+var _slow_timer: float = 0.0
+
 func _ready() -> void:
 	add_to_group("enemy")
 	_player = get_tree().get_first_node_in_group("player")
@@ -45,7 +48,7 @@ func _physics_process(delta: float) -> void:
 		_external_force_timer -= delta
 		velocity = _external_velocity
 	else:
-		velocity = global_position.direction_to(_player.global_position) * stage_data.move_speed
+		velocity = global_position.direction_to(_player.global_position) * stage_data.move_speed * _slow_multiplier
 	move_and_slide()
 
 	_contact_timer -= delta
@@ -55,6 +58,7 @@ func _physics_process(delta: float) -> void:
 			_player.take_damage(stage_data.contact_damage)
 
 	_process_bleed(delta)
+	_process_slow(delta)
 
 ## 외력(external force) 부여. 넉백뿐 아니라 나중에 추가될 견인/흡입/컨베이어 등 "적의 의지와
 ## 무관하게 강제로 미는" 모든 효과의 공통 진입점. 여러 외력이 동시에 걸리면 벡터 합으로
@@ -92,6 +96,19 @@ func _process_bleed(delta: float) -> void:
 	if _bleed_tick_timer <= 0.0:
 		_bleed_tick_timer = BLEED_TICK_INTERVAL
 		take_damage(_bleed_damage_per_tick)
+
+## 이동속도 감소(둔화) 부여. 이미 걸려 있으면 최신 수치로 덮어씀(출혈과 동일한 정책 —
+## apply_bleed() 참고). 침 뱉기 진화 A(맹독지대)가 사용.
+func apply_slow(speed_multiplier: float, duration: float) -> void:
+	_slow_multiplier = speed_multiplier
+	_slow_timer = duration
+
+func _process_slow(delta: float) -> void:
+	if _slow_timer <= 0.0:
+		return
+	_slow_timer -= delta
+	if _slow_timer <= 0.0:
+		_slow_multiplier = 1.0
 
 ## move_and_slide()가 실제로 감지한 물리 충돌 중 플레이어와 맞닿은 게 있는지 확인.
 ## 콜리전 셰이프 반지름 합(플레이어 16 + 몹 12 등)이 몹마다(visual_scale) 달라지므로,

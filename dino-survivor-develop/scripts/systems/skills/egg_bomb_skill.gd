@@ -35,5 +35,10 @@ func _pick_landing_point(data: EggBombData) -> Vector2:
 	var facing: Vector2 = owner_body.get("facing_direction")
 	return owner_body.global_position + facing * data.throw_range
 
+## Lv5에서 쿨타임이 소폭 감소하도록, 데이터에 적힌 레벨별 배율을 cooldown에 곱함.
+func _leveled_cooldown() -> float:
+	var data := skill_data as EggBombData
+	return data.cooldown * data.cooldown_multiplier_for_level(level)
+
 func _indicator_color() -> Color:
 	return Color(0.95, 0.85, 0.6, 0.35)

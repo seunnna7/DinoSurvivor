@@ -18,6 +18,9 @@ enum Evolution { NONE, BIG_EGG, EGG_CLUSTER }
 @export_group("폭발 (레벨별, 인덱스 0 = Lv1)")
 @export var level_aoe_radius: Array[float] = [50.0, 50.0, 65.0, 65.0, 65.0]  ## Lv3에서 폭발 범위 증가(특징적 강화)
 
+@export_group("쿨타임 (레벨별, 인덱스 0 = Lv1)")
+@export var level_cooldown_multiplier: Array[float] = [1.0, 1.0, 1.0, 1.0, 0.85]  ## cooldown에 곱하는 배율. Lv5에서 소폭 감소(설계서 "진화 가능 상태 + 쿨타임 소폭 감소")
+
 @export_group("형태 B: 알다발 전용")
 @export var mine_count: int = 5                ## 착탄 지점 주변에 흩뿌려지는 미니 알 개수
 @export var mine_scatter_radius: float = 70.0  ## 미니 알들이 착탄 지점 주변에 퍼지는 반경
@@ -27,3 +30,7 @@ enum Evolution { NONE, BIG_EGG, EGG_CLUSTER }
 ## 스킬 레벨(1~5)에 맞는 폭발 반경. 배열 범위를 벗어나면 마지막 값을 사용.
 func aoe_radius_for_level(level: int) -> float:
 	return level_aoe_radius[clampi(level - 1, 0, level_aoe_radius.size() - 1)]
+
+## 스킬 레벨(1~5)에 맞는 쿨타임 배율. 배열 범위를 벗어나면 마지막 값을 사용.
+func cooldown_multiplier_for_level(level: int) -> float:
+	return level_cooldown_multiplier[clampi(level - 1, 0, level_cooldown_multiplier.size() - 1)]

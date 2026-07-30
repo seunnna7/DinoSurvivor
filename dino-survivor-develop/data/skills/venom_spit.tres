@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="VenomSpitData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
+[ext_resource type="Script" path="res://resource_types/venom_spit_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/VenomSpitSkill.tscn" id="3"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/venom_spit_evo_toxic_field.tres" id="4"]
+
+[resource]
+script = ExtResource("2")
+id = &"venom_spit"
+display_name = "침 뱉기"
+species_motif = "딜로포사우루스"
+flavor_text = "포물선을 그리며 날아간 독액이 떨어진 자리에 중독 장판을 남깁니다. 장판 안에 머무는 적은 지속적으로 (데미지_숫자)의 중독 피해를 입습니다."
+tags = Array[StringName]([&"lob", &"area"])
+base_damage = 8.0
+cooldown = 3.4
+knockback_distance = 0.0
+max_level = 5
+logic_scene = ExtResource("3")
+evolutions = Array[ExtResource("1")]([ExtResource("4")])
+throw_range = 200.0
+flight_time = 0.55
+level_zone_radius = Array[float]([55.0, 55.0, 55.0, 55.0, 55.0])
+level_zone_duration = Array[float]([3.0, 3.0, 4.5, 4.5, 4.5])
+tick_interval = 0.5
+level_cooldown_multiplier = Array[float]([1.0, 0.85, 0.85, 0.7, 0.7])
+level_damage = Array[float]([1.0, 1.0, 1.0, 1.0, 1.1])
+icon_color = Color(0.5, 0.8, 0.2, 1)

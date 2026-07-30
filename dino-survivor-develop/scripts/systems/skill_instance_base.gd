@@ -23,12 +23,17 @@ func _process(delta: float) -> void:
 		return
 	_cooldown_timer -= delta
 	if _cooldown_timer <= 0.0:
-		_cooldown_timer = skill_data.cooldown
+		_cooldown_timer = _leveled_cooldown()
 		_perform()
 
 ## 하위 클래스에서 반드시 override. 실제 공격/효과 로직.
 func _perform() -> void:
 	push_warning("SkillInstanceBase._perform()이 구현되지 않았습니다: %s" % skill_data.id)
+
+## 하위 클래스 오버라이드용. 기본은 스킬 데이터의 고정 쿨타임(skill_data.cooldown) 그대로.
+## 레벨에 따라 쿨타임이 줄어드는 스킬(예: 알 폭탄 Lv5)은 이 함수를 오버라이드.
+func _leveled_cooldown() -> float:
+	return skill_data.cooldown
 
 ## 사거리를 원형(또는 arc_degrees < 360이면 owner_body가 바라보는 방향의 부채꼴) 아웃라인으로
 ## 표시하고 싶은 하위 클래스에서 setup() 오버라이드 중 호출.

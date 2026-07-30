@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="VenomSpitData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/venom_spit_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/VenomSpitSkill.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+evolution = 1
+level_zone_duration = Array[float]([4.5, 4.5, 4.5, 4.5, 4.5])
+toxic_field_radius_multiplier = 1.8
+toxic_field_slow_multiplier = 0.5
+toxic_field_slow_duration = 1.0
+id = &"venom_spit_evo_toxic_field"
+display_name = "맹독지대"
+species_motif = "딜로포사우루스"
+flavor_text = "가둬놓고 서서히 녹입니다. 장판이 크게 넓어지고, 그 안에 머무는 적은 (데미지_숫자)의 중독 피해와 함께 움직임이 크게 느려집니다."
+tags = Array[StringName]([&"lob", &"area", &"debuff"])
+base_damage = 10.0
+cooldown = 2.9
+max_level = 1
+knockback_distance = 0.0
+logic_scene = ExtResource("2")
+icon_color = Color(0.45, 0.75, 0.15, 1)
