@@ -40,7 +40,6 @@ texture_filter = 1
 scale = Vector2(2.5, 2.5)
 texture = ExtResource("2")
 hframes = 7
-frame = 6
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=73222755]
 libraries/ = SubResource("AnimationLibrary_swipe")
