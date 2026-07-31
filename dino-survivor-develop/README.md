@@ -33,7 +33,8 @@ DinoSurvivorsPrototype/
 ├── autoload/                # 전역 싱글톤
 │   ├── run_state.gd            # 런 상태 (경험치, 골드, 경과시간, 장착 스킬)
 │   ├── skill_database.gd       # data/skills/ 전체 로드 + 조회
-│   └── wave_manager.gd         # data/enemies/ 기반 티어별 스폰 관리
+│   ├── wave_manager.gd         # data/enemies/ 기반 티어별 스폰 관리
+│   └── chunk_manager.gd        # 플레이어 주변 청크(지형) 동적 로드/언로드
 ├── data/                    # 콘텐츠 데이터 (.tres) — 코드 없이 여기만 늘리면 됨
 │   ├── skills/                 # 스킬 하나당 파일 하나 (예: bite.tres)
 │   ├── species/                # 종족 하나당 파일 하나 (예: trex.tres)
@@ -53,7 +54,8 @@ DinoSurvivorsPrototype/
 │   │   ├── Enemy.tscn              # 몹 씬 하나로 모든 몹 종류를 커버 (데이터로 구분)
 │   │   └── pickups/                # XPGem.tscn, GoldCoin.tscn
 │   ├── skills/                  # 스킬별 로직 씬 (예: BiteSkill.tscn)
-│   └── ui/                      # 레벨업/탈피 등 UI 씬 (추가 예정)
+│   ├── ui/                      # 레벨업/탈피 등 UI 씬 (추가 예정)
+│   └── world/Chunk.tscn         # 청크 하나(지형 TileMapLayer + 장식 컨테이너)
 ├── scripts/
 │   ├── entities/ (player.gd, enemy.gd)
 │   ├── systems/
@@ -63,7 +65,8 @@ DinoSurvivorsPrototype/
 │   │   ├── skills/bite_skill.gd       # 물기 실제 동작
 │   │   └── pickups/ (xp_gem.gd, gold_coin.gd)
 │   ├── ui/                      # (추가 예정)
-│   └── debug/grid_background.gd   # 테스트용, 나중에 삭제 가능
+│   ├── world/                   # 청크 하나의 생성 로직 (chunk.gd), 공용 상수/헬퍼, 자리표시 타일 팩토리
+│   └── debug/                   # 실험용 스크립트 임시 보관 (현재 비어있음)
 ├── assets/ (art/, audio/)
 └── .gitignore
 ```

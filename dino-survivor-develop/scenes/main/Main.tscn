@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://b2hswcw6p1dem"]
 
 [ext_resource type="PackedScene" path="res://scenes/entities/Player.tscn" id="1_player"]
-[ext_resource type="Script" uid="uid://cibph1fq3olm5" path="res://scripts/debug/grid_background.gd" id="2_grid"]
 [ext_resource type="Script" uid="uid://dfb7dvmuoayrg" path="res://scripts/systems/main.gd" id="3_main"]
 [ext_resource type="PackedScene" path="res://scenes/ui/GameUI.tscn" id="4_ui"]
 
@@ -23,8 +22,7 @@ stretch_shrink = 3
 [node name="GameWorld" type="SubViewport" parent="GameLayer/GameViewportContainer"]
 size = Vector2i(640, 360)
 
-[node name="GridBackground" type="Node2D" parent="GameLayer/GameViewportContainer/GameWorld" unique_id=1742934295]
-script = ExtResource("2_grid")
+[node name="ChunkContainer" type="Node2D" parent="GameLayer/GameViewportContainer/GameWorld" unique_id=1742934295]
 
 [node name="Player" parent="GameLayer/GameViewportContainer/GameWorld" unique_id=801142140 instance=ExtResource("1_player")]
 

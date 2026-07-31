@@ -28,6 +28,7 @@ MetaProgress="*res://autoload/meta_progress.gd"
 FossilProgress="*res://autoload/fossil_progress.gd"
 TagDatabase="*res://autoload/tag_database.gd"
 DevTools="*res://autoload/dev_tools.gd"
+ChunkManager="*res://autoload/chunk_manager.gd"
 
 [display]
 

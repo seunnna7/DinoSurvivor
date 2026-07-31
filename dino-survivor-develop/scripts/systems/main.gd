@@ -1,11 +1,12 @@
 extends Node2D
 ## Main 씬 루트 스크립트 (마일스톤 G2)
-## 게임 시작 시 WaveManager를 가동시킵니다.
+## 게임 시작 시 WaveManager와 ChunkManager를 가동시킵니다.
 
 const PLAYER_PATH := "GameLayer/GameViewportContainer/GameWorld/Player"
 
 @onready var player: Node2D = $GameLayer/GameViewportContainer/GameWorld/Player
 @onready var enemy_container: Node2D = $GameLayer/GameViewportContainer/GameWorld/EnemyContainer
+@onready var chunk_container: Node2D = $GameLayer/GameViewportContainer/GameWorld/ChunkContainer
 
 ## _ready()는 자식(Player > SkillController 등)이 먼저 준비된 뒤 호출되기 때문에,
 ## 여기서 RunState.reset_run()을 부르면 SkillController가 등록한 시작 스킬이 초기화돼 버립니다.
@@ -17,3 +18,4 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	WaveManager.start(player, enemy_container)
+	ChunkManager.start(player, chunk_container)
