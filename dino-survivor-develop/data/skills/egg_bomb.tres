@@ -1,13 +1,17 @@
-[gd_resource type="Resource" script_class="EggBombData" format=3]
+[gd_resource type="Resource" script_class="EggBombData" format=3 uid="uid://dleiuklhjjvqb"]
 
-[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
-[ext_resource type="Script" path="res://resource_types/egg_bomb_data.gd" id="2"]
+[ext_resource type="Script" uid="uid://ni2blacxo802" path="res://resource_types/skill_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://dao5bgrouls35" path="res://resource_types/egg_bomb_data.gd" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/skills/EggBombSkill.tscn" id="3"]
 [ext_resource type="Resource" path="res://data/skill_evolutions/egg_bomb_evo_big.tres" id="4"]
-[ext_resource type="Resource" path="res://data/skill_evolutions/egg_bomb_evo_cluster.tres" id="5"]
+[ext_resource type="Resource" uid="uid://cwupp3upuwr3f" path="res://data/skill_evolutions/egg_bomb_evo_cluster.tres" id="5"]
+[ext_resource type="Script" uid="uid://drcumpt1lyw1e" path="res://resource_types/stat_modifier_data.gd" id="5_wq8qx"]
 
 [resource]
 script = ExtResource("2")
+throw_range = 240.0
+level_aoe_radius = Array[float]([50.0, 50.0, 70.0, 70.0, 70.0])
+level_damage = Array[float]([1.0, 1.2, 1.35, 1.6, 1.8])
 id = &"egg_bomb"
 display_name = "알 폭탄"
 species_motif = "마이아사우라"
@@ -16,11 +20,6 @@ tags = Array[StringName]([&"lob", &"area"])
 base_damage = 18.0
 cooldown = 3.0
 knockback_distance = 0.25
-max_level = 5
 logic_scene = ExtResource("3")
 evolutions = Array[ExtResource("1")]([ExtResource("4"), ExtResource("5")])
-throw_range = 240.0
-flight_time = 0.5
-level_aoe_radius = Array[float]([50.0, 50.0, 70.0, 70.0, 70.0])
-level_damage = Array[float]([1.0, 1.2, 1.35, 1.6, 1.8])
 icon_color = Color(0.95, 0.85, 0.5, 1)

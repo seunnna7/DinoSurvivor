@@ -13,7 +13,8 @@ enum Evolution { NONE, BIG_EGG, EGG_CLUSTER }
 
 @export_group("투척")
 @export var throw_range: float = 220.0  ## 조준(가장 가까운 적 탐색) 및 최대 투척 거리
-@export var flight_time: float = 0.5    ## 던진 뒤 착탄까지 걸리는 시간(포물선 체공 시간)
+@export var min_flight_time: float = 0.3  ## 코앞에 던질 때 체공 시간
+@export var max_flight_time: float = 0.7  ## throw_range 끝까지 던질 때 체공 시간 — 알 폭탄은 거리 차이가 눈에 띄게 크게 벌려둠
 
 @export_group("폭발 (레벨별, 인덱스 0 = Lv1)")
 @export var level_aoe_radius: Array[float] = [50.0, 50.0, 65.0, 65.0, 65.0]  ## Lv3에서 폭발 범위 증가(특징적 강화)

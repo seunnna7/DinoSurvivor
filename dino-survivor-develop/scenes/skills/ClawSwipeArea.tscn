@@ -28,6 +28,8 @@ _data = {
 }
 
 [node name="ClawSwipeArea" type="Area2D" unique_id=1889778808]
+collision_layer = 0
+collision_mask = 2
 script = ExtResource("1")
 hit_delay = 0.09
 

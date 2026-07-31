@@ -12,6 +12,32 @@ var mine_scatter_radius: float = 70.0
 var mine_radius: float = 30.0
 var mine_lifetime: float = 6.0
 
+@export var launch_tilt_degrees: float = 30.0  ## 발사 각도와 무관하게, 스프라이트 기본 자세에서 좌우 랜덤으로 주는 초기 기울기
+@export var trajectory_lean_fraction: float = 0.4  ## 궤적 방향으로 "완전히" 정렬(1.0)할 필요 없이, 그쪽으로 어느 정도만 기울이는 비율
+
+var _launch_tilt: float = 0.0
+var _trajectory_turn: float = 0.0
+
+## 발사 순간에는 궤적 방향과 무관하게, 스프라이트 기본 자세(윗부분이 화면 위)에서
+## -launch_tilt_degrees~+launch_tilt_degrees 사이 랜덤 기울기만 준 채로 생성됩니다.
+## 이후 _on_flight()에서 비행 진행률에 따라, 궤적 쪽으로 "어느 정도만"(trajectory_lean_fraction,
+## 완전 정렬이 아니라 방향성만 느껴질 정도) 회전을 그 위에 추가로 얹습니다.
+## 스프라이트의 기본 정면이 위쪽(-Y)이라, +X를 정면으로 가정하는 Vector2.angle() 결과에
+## 90도(PI/2)를 더 얹어야 "위쪽 = 진행 방향"(완전 정렬 기준각)이 됩니다.
+## 루트가 아니라 $Visual에 걸어야 합니다 — 루트는 화면 상승 오프셋 계산이 "로컬 -Y = 화면 위"를
+## 전제하므로 무회전 상태를 유지해야 합니다(base_lobbed_projectile.gd 참고).
+func launch(from_position: Vector2, to_position: Vector2) -> void:
+	super.launch(from_position, to_position)
+	_launch_tilt = deg_to_rad(randf_range(-launch_tilt_degrees, launch_tilt_degrees))
+	_trajectory_turn = (from_position.direction_to(to_position).angle() + PI / 2.0) * trajectory_lean_fraction
+	_visual.rotation = _launch_tilt
+
+## 최초 랜덤 기울기(_launch_tilt)는 고정하고, 그 위에 궤적 방향으로의 부분 기울임(_trajectory_turn,
+## 이미 trajectory_lean_fraction만큼만 반영된 값)을 진행률 t만큼 얹습니다 — t=0(발사 직후)에는
+## 기울기만 있어 항상 윗부분이 화면 위 근처를 향하고, t=1(착탄)에는 기울기 + 부분 궤적 회전이 됩니다.
+func _on_flight(t: float) -> void:
+	_visual.rotation = _launch_tilt + _trajectory_turn * t
+
 func _on_landed() -> void:
 	if evolution == EggBombData.Evolution.EGG_CLUSTER:
 		_scatter_mines()

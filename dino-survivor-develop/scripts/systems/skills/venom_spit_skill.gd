@@ -14,11 +14,14 @@ func setup(data: SkillData, body: Node2D) -> void:
 func _fire() -> void:
 	var data := skill_data as VenomSpitData
 	var landing_point := _pick_landing_point(data)
+	var distance := owner_body.global_position.distance_to(landing_point)
 
 	var spit: VenomSpitProjectile = PROJECTILE_SCENE.instantiate()
 	spit.damage = _leveled_damage()
 	spit.knockback_distance = data.knockback_distance
-	spit.flight_time = data.flight_time
+	spit.flight_time = BaseLobbedProjectile.flight_time_for_distance(
+		distance, data.throw_range, data.min_flight_time, data.max_flight_time
+	)
 	spit.aoe_radius = data.zone_radius_for_level(level)
 	spit.zone_duration = data.zone_duration_for_level(level)
 	spit.tick_interval = data.tick_interval

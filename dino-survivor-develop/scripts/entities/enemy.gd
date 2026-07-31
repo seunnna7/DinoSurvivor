@@ -14,6 +14,7 @@ var health: float
 var _player: Node2D
 var _contact_timer: float = 0.0
 var _sprite: AnimatedSprite2D
+@onready var _player_detector: Area2D = $PlayerDetector
 
 ## "적의 의지와 무관하게 강제로 미는" 모든 힘의 공통 상태 — 지금은 넉백만 이 채널을 쓰지만,
 ## 나중에 견인/흡입/컨베이어 같은 다른 외력이 생겨도 apply_external_force() 하나로 얹으면 됨.
@@ -128,14 +129,14 @@ func _process_slow(delta: float) -> void:
 	if _slow_timer <= 0.0:
 		_slow_multiplier = 1.0
 
-## move_and_slide()가 실제로 감지한 물리 충돌 중 플레이어와 맞닿은 게 있는지 확인.
-## 콜리전 셰이프 반지름 합(플레이어 16 + 몹 12 등)이 몹마다(visual_scale) 달라지므로,
-## 고정된 거리 상수 대신 실제 충돌 결과를 써야 정확합니다.
+## PlayerDetector(Area2D)가 플레이어와 겹쳐 있는지 확인.
+## 몹 본체(CharacterBody2D)는 플레이어와 물리 충돌하지 않도록 레이어를 분리해뒀음(플레이어를
+## 밀고 다니거나, 접촉 상태에서 플레이어 이동에 끌려다니는 현상 방지 — Enemy.tscn 참고).
+## 접촉 판정은 대신 이 Area2D로 하되, 셰이프는 몹 본체와 동일한 걸 그대로 써서
+## (콜리전 셰이프 반지름 합 = 플레이어 16 + 몹 12 등, visual_scale로 자동 스케일) 이전과
+## 동일한 정확도를 유지합니다.
 func _is_touching_player() -> bool:
-	for i in get_slide_collision_count():
-		if get_slide_collision(i).get_collider() == _player:
-			return true
-	return false
+	return _player in _player_detector.get_overlapping_bodies()
 
 ## knockback_distance/source_position은 옵션(기본값=넉백 없음) — 공격 데이터에 knockback_distance가
 ## 없으면 그냥 데미지만 들어갑니다(넉백은 공격의 선택적 속성). source_position은 "공격 중심"으로,

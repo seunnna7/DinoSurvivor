@@ -5,6 +5,11 @@ extends Node
 ## - BOSS: 해당 단계의 unlock_time에 딱 1회만 스폰 (반복 없음)
 ##
 ## 몹을 추가/변경할 때 이 스크립트는 건드릴 필요 없습니다 — data/enemies/ 폴더만 갱신하면 됩니다.
+##
+## 이 스크립트는 "베이스 레이어"(런 내내 유지되는, 커브 기반의 상시 스폰)만 담당합니다.
+## 특정 시점에 특정 패턴으로 몹을 몰아서 내보내는 "이벤트 레이어"는 별도 시스템으로 추가될
+## 예정이며, 그때도 이 스크립트를 고칠 필요는 없어야 합니다(별도 스포너가 같은 EnemyContainer에
+## Enemy.tscn을 추가하는 방식으로 병행 동작).
 
 const ENEMIES_PATH := "res://data/enemies/"
 const SPAWN_DISTANCE := 500.0

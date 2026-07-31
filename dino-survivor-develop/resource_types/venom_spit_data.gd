@@ -14,7 +14,8 @@ enum Evolution { NONE, TOXIC_FIELD }
 
 @export_group("투척")
 @export var throw_range: float = 200.0  ## 조준(가장 가까운 적 탐색) 및 최대 투척 거리
-@export var flight_time: float = 0.55   ## 뱉은 뒤 착탄까지 걸리는 시간(포물선 체공 시간)
+@export var min_flight_time: float = 0.45  ## 코앞에 뱉을 때 체공 시간
+@export var max_flight_time: float = 0.55  ## throw_range 끝까지 뱉을 때 체공 시간 — 침 뱉기는 거리 차이가 거의 안 느껴지게 좁게 잡음
 
 @export_group("중독 장판 (레벨별, 인덱스 0 = Lv1)")
 @export var level_zone_radius: Array[float] = [55.0, 55.0, 55.0, 55.0, 55.0]  ## 장판 반경. 설계서상 레벨별 변화 없음(Lv1 "기본 장판 크기"만 명시)

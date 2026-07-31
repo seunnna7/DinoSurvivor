@@ -1,17 +1,16 @@
-[gd_resource type="Resource" script_class="EnemyStageData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="EnemyStageData" format=3 uid="uid://rkaalbx1rdm"]
 
-[ext_resource type="Script" path="res://resource_types/enemy_stage_data.gd" id="1"]
-[ext_resource type="Resource" path="res://data/loot_tables/boss_loot.tres" id="2"]
+[ext_resource type="Script" uid="uid://berbss44ehttb" path="res://resource_types/enemy_stage_data.gd" id="1"]
+[ext_resource type="Resource" uid="uid://c4dirxqensfeh" path="res://data/loot_tables/boss_loot.tres" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = &"boss_01"
 display_name = "보스"
 tier = 2
-stage = 1
 unlock_time = 180.0
 max_health = 800.0
-move_speed = 50.0
+move_speed = 30.0
 contact_damage = 20.0
 knockback_resistance = 1.0
 visual_scale = 2.5

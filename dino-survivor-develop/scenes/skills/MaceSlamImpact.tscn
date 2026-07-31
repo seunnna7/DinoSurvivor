@@ -6,6 +6,8 @@
 radius = 100.0
 
 [node name="MaceSlamImpact" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
 script = ExtResource("1")
 duration = 0.3
 

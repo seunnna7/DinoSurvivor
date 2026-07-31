@@ -19,7 +19,7 @@ const DEFAULT_VALUE := {
 	&"max_health": 100.0,
 	&"damage_mult": 1.0,
 	&"armor": 0.0,
-	&"move_speed": 300.0,
+	&"move_speed": 150.0,
 	&"cooldown_mult": 1.0,
 	&"pickup_range": 40.0,
 	&"crit_chance": 0.0,

@@ -1,21 +1,19 @@
-[gd_resource type="Resource" script_class="EnemyStageData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="EnemyStageData" format=3 uid="uid://dpipf2gab2rfo"]
 
-[ext_resource type="Script" path="res://resource_types/enemy_stage_data.gd" id="1"]
-[ext_resource type="Resource" path="res://data/loot_tables/elite_mob_loot.tres" id="2"]
+[ext_resource type="Script" uid="uid://berbss44ehttb" path="res://resource_types/enemy_stage_data.gd" id="1"]
+[ext_resource type="Resource" uid="uid://cyv2jc8j0ywcd" path="res://data/loot_tables/elite_mob_loot.tres" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = &"elite_01"
 display_name = "정예 개체"
 tier = 1
-stage = 1
 unlock_time = 30.0
 max_health = 150.0
-move_speed = 70.0
+move_speed = 30.0
 contact_damage = 12.0
 knockback_resistance = 0.5
 spawn_interval = 30.0
-spawn_count_per_tick = 1
 visual_scale = 1.6
-visual_color = Color(1.0, 0.55, 0.2, 1)
+visual_color = Color(1, 0.55, 0.2, 1)
 loot_table = ExtResource("2")

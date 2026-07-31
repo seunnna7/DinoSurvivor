@@ -13,11 +13,14 @@ func setup(data: SkillData, body: Node2D) -> void:
 func _fire() -> void:
 	var data := skill_data as EggBombData
 	var landing_point := _pick_landing_point(data)
+	var distance := owner_body.global_position.distance_to(landing_point)
 
 	var egg: EggBombProjectile = PROJECTILE_SCENE.instantiate()
 	egg.damage = _leveled_damage()
 	egg.knockback_distance = data.knockback_distance
-	egg.flight_time = data.flight_time
+	egg.flight_time = BaseLobbedProjectile.flight_time_for_distance(
+		distance, data.throw_range, data.min_flight_time, data.max_flight_time
+	)
 	egg.aoe_radius = data.aoe_radius_for_level(level)
 	egg.evolution = data.evolution
 	egg.mine_count = data.mine_count
