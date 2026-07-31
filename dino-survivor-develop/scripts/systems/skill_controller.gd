@@ -55,3 +55,25 @@ func evolve_skill(base_id: StringName, evolution_data: SkillData) -> void:
 		instance.setup(evolution_data, owner_body)
 		_instances[evolution_data.id] = instance
 	RunState.skill_acquired.emit(evolution_data)
+
+## 개발자 메뉴 전용 — 보유 스킬을 레벨과 무관하게 완전히 제거합니다 (인스턴스 노드도 함께 정리).
+## scripts/debug/dev_menu.gd와 함께 지우면 됩니다.
+func remove_skill(id: StringName) -> void:
+	if not RunState.is_skill_owned(id):
+		return
+	if _instances.has(id):
+		_instances[id].queue_free()
+		_instances.erase(id)
+	RunState.remove_skill(id)
+
+## 개발자 메뉴 전용 — 스킬 레벨을 정확한 값으로 지정합니다 (0 이하면 완전히 제거).
+## scripts/debug/dev_menu.gd와 함께 지우면 됩니다.
+func dev_set_skill_level(id: StringName, level: int) -> void:
+	if level <= 0:
+		remove_skill(id)
+		return
+	if not RunState.is_skill_owned(id):
+		acquire_skill(id)
+	RunState.skill_levels[id] = level
+	if _instances.has(id):
+		_instances[id].level = level
