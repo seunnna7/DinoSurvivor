@@ -19,6 +19,7 @@ func _ready() -> void:
 	super._ready()
 	_sprite.flip_h = randf() < 0.5
 	_anim.play(&"swipe", -1, 0.5)
+	fade_delay = 0.3  # swipe 애니메이션 프레임5 시점(0.15s / speed_scale 0.5)까지는 완전 불투명 유지
 
 func _on_tick_hit(enemy: Enemy) -> void:
 	if bleed_damage_per_second > 0.0:

@@ -17,6 +17,7 @@ extends BaseAttackObject
 @export var tick_interval: float = 0.0  ## 0이면 스폰 시 1회만 타격, >0이면 duration 동안 반복 타격
 @export var move_speed: float = 0.0     ## 0이면 고정, >0이면 가장 가까운 적 쪽으로 이 속도로 이동
 @export var hit_delay: float = 0.0      ## 0이면 스폰 즉시 타격, >0이면 이 시간(초) 뒤에 첫 타격(스윙 애니메이션과 싱크용)
+@export var fade_delay: float = 0.0     ## 이 시간(초) 동안은 완전 불투명 유지, 그 이후부터 duration까지 페이드(스폰 모션이 다 보이기 전에 옅어지는 것을 방지)
 
 var _elapsed: float = 0.0
 var _hit_timers: Dictionary = {}  ## Enemy -> float(다음 타격까지 남은 시간). tick_interval > 0일 때만 사용.
@@ -38,7 +39,10 @@ func _physics_process(delta: float) -> void:
 	if _elapsed >= duration:
 		queue_free()
 		return
-	modulate.a = 1.0 - (_elapsed / duration)  # 남은 시간에 비례해 서서히 옅어짐
+	if _elapsed <= fade_delay:
+		modulate.a = 1.0
+	else:
+		modulate.a = 1.0 - (_elapsed - fade_delay) / (duration - fade_delay)  # fade_delay 이후로만 남은 시간에 비례해 서서히 옅어짐
 	if move_speed > 0.0:
 		_move_toward_nearest_enemy(delta)
 	if tick_interval > 0.0:
