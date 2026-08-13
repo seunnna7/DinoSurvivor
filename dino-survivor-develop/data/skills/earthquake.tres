@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="EarthquakeData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="1"]
+[ext_resource type="Script" path="res://resource_types/earthquake_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/EarthquakeSkill.tscn" id="3"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/earthquake_evo_cataclysm.tres" id="4"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/earthquake_evo_aftershock.tres" id="5"]
+
+[resource]
+script = ExtResource("2")
+id = &"earthquake"
+display_name = "지진"
+species_motif = "아르헨티노사우루스"
+flavor_text = "역사상 가장 거대한 발걸음이 땅을 내리찍으면, 대지 자체가 무기가 됩니다. 전방으로 균열이 일자로 갈라지며 그 범위의 모든 적에게 (데미지_숫자)의 피해를 줍니다."
+tags = Array[StringName]([&"area", &"line", &"knockback"])
+base_damage = 30.0
+cooldown = 6.0
+max_level = 5
+knockback_distance = 0.3
+logic_scene = ExtResource("3")
+evolutions = Array[ExtResource("1")]([ExtResource("4"), ExtResource("5")])
+level_damage = Array[float]([1.0, 1.2, 1.45, 1.7, 1.85])
+level_cooldown_multiplier = Array[float]([1.0, 1.0, 0.85, 0.85, 0.85])
+rect_size = Vector2(260.0, 90.0)
+cast_delay = 0.55
+aftershock_delay = 0.6
+aftershock_damage_multiplier = 0.65
+icon_color = Color(0.55, 0.35, 0.15, 1)

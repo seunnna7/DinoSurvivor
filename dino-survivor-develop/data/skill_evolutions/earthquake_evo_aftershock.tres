@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EarthquakeData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/earthquake_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/EarthquakeSkill.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"earthquake_evo_aftershock"
+display_name = "여진"
+species_motif = "아르헨티노사우루스"
+flavor_text = "첫 균열이 채 가라앉기도 전에, 같은 자리에서 땅이 한 번 더 갈라집니다. 시차를 두고 두 번 (데미지_숫자)의 피해를 입힙니다."
+tags = Array[StringName]([&"area", &"line", &"knockback"])
+base_damage = 30.0
+cooldown = 6.0
+max_level = 1
+knockback_distance = 0.3
+logic_scene = ExtResource("2")
+rect_size = Vector2(260.0, 90.0)
+cast_delay = 0.55
+aftershock_delay = 0.6
+aftershock_damage_multiplier = 0.7
+evolution = 2
+icon_color = Color(0.5, 0.28, 0.12, 1)

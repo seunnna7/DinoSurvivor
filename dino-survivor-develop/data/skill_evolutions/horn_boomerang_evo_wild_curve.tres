@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="HornBoomerangData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/horn_boomerang_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/HornBoomerangSkill.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"horn_boomerang_evo_wild_curve"
+display_name = "광폭 곡선"
+species_motif = "에이니오사우루스"
+flavor_text = "돌아온 뿔이 그 자리에서 부풀어 오르듯 커지며 맹렬히 회전해, 주변의 적을 갈아버립니다. 회전하는 동안 반경 내 적에게 지속적으로 (데미지_숫자)의 피해를 입힙니다."
+tags = Array[StringName]([&"projectile", &"pierce", &"area"])
+base_damage = 13.0
+cooldown = 1.8
+max_level = 1
+logic_scene = ExtResource("2")
+evolution = 2
+forward_range = 220.0
+lateral_amplitude = 90.0
+loop_duration = 0.45
+level_loop_count = Array[int]([2, 2, 2, 2, 2])
+wild_curve_scale_multiplier = 2.2
+wild_curve_spin_duration = 0.5
+wild_curve_tick_interval = 0.15
+wild_curve_radius = 60.0
+icon_color = Color(0.9, 0.4, 0.15, 1)

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="HornBoomerangData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/horn_boomerang_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/HornBoomerangSkill.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"horn_boomerang_evo_twin"
+display_name = "이중 뿔메랑"
+species_motif = "에이니오사우루스"
+flavor_text = "뿔 두 개를 양손으로 동시에 던져, 서로 반대 방향으로 휘어지는 궤적을 그립니다. 두 궤적이 지나는 모든 적에게 각각 (데미지_숫자)의 피해를 입힙니다."
+tags = Array[StringName]([&"projectile", &"pierce"])
+base_damage = 9.0
+cooldown = 1.9
+max_level = 1
+logic_scene = ExtResource("2")
+evolution = 1
+forward_range = 220.0
+lateral_amplitude = 90.0
+loop_duration = 0.45
+level_loop_count = Array[int]([2, 2, 2, 2, 2])
+icon_color = Color(0.95, 0.75, 0.3, 1)

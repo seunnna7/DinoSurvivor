@@ -7,11 +7,13 @@ extends CanvasLayer
 ## 둘 다 "개발자 메뉴 전용" 주석이 붙어 있어 같이 지우면 완전히 원상복구됩니다.
 
 const TIME_SCALES: Array[float] = [0.5, 1.0, 2.0, 3.0]
+const TARGET_RUN_SECONDS := 900.0  ## 레벨 곡선 목표 기준인 15분 런 (기획서 VS-1)
 
 var _toggle_button: Button
 var _panel: Panel
 var _skill_list: VBoxContainer
 var _invincible_button: Button
+var _stats_label: Label
 var _is_open: bool = false
 var _dev_invincible: bool = false
 
@@ -30,6 +32,8 @@ func _process(_delta: float) -> void:
 		_close()
 	if _dev_invincible and player != null:
 		player.is_invincible = true
+	if _is_open:
+		_stats_label.text = _stats_text()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_QUOTELEFT:
@@ -94,6 +98,10 @@ func _build_ui() -> void:
 	var title := Label.new()
 	title.text = "[DEV] 개발자 메뉴  (~ 키로 열고 닫기)"
 	vbox.add_child(title)
+
+	_stats_label = Label.new()
+	_stats_label.process_mode = Node.PROCESS_MODE_ALWAYS
+	vbox.add_child(_stats_label)
 
 	vbox.add_child(_build_row([
 		_make_button("레벨업 +1", _on_level_up_pressed),
@@ -163,6 +171,36 @@ func _build_skill_row(data: SkillData) -> HBoxContainer:
 	row.add_child(_make_button("+", _on_skill_level_up.bind(data.id)))
 	row.add_child(_make_button("삭제", _on_skill_remove.bind(data.id)))
 	return row
+
+# --- 레벨 곡선 계측 (VS-1 목표: 15분에 RunState.TARGET_LEVELUPS 회 레벨업) ---
+
+## 현재까지의 분당 XP 수급률이 그대로 유지된다고 가정했을 때 15분 시점의 예상 레벨을 함께 표시합니다.
+## 이 값이 목표 레벨에 붙도록 RunState의 XP_BASE/XP_GROWTH를 조정하면 됩니다.
+func _stats_text() -> String:
+	var elapsed: float = RunState.elapsed_time
+	var maxed := 0
+	for data in RunState.owned_skills:
+		if RunState.skill_level(data.id) >= data.max_level:
+			maxed += 1
+	var line := "%s  Lv.%d  슬롯 %d/%d  만렙 %d개  누적XP %d" % [
+		RunState.format_time(elapsed), RunState.level,
+		RunState.active_skill_count(), RunState.ACTIVE_SLOT_COUNT,
+		maxed, RunState.total_experience,
+	]
+	if elapsed < 1.0:
+		return line
+	var per_minute: float = RunState.total_experience / elapsed * 60.0
+	var projected: float = RunState.total_experience / elapsed * TARGET_RUN_SECONDS
+	return "%s\n분당 %d XP → 15분 예상 Lv.%d (목표 %d)" % [
+		line, int(per_minute), _level_for_total_xp(int(projected)),
+		RunState.TARGET_LEVELUPS + 1,
+	]
+
+func _level_for_total_xp(total_xp: int) -> int:
+	var level := 1
+	while RunState.total_xp_for_level(level + 1) <= total_xp:
+		level += 1
+	return level
 
 # --- 액션 ---
 
