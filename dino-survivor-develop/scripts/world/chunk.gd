@@ -12,7 +12,7 @@ const DECORATION_COUNT_RANGE := Vector2i(2, 5)  # 청크당 장식 개수(최소
 @onready var _decoration_container: Node2D = $DecorationContainer
 
 func _ready() -> void:
-	_ground_layer.tile_set = TilePlaceholderFactory.get_ground_tileset()
+	_ground_layer.tile_set = GroundTileSetLoader.get_ground_tileset()
 
 ## ChunkManager가 add_child() 직후 호출합니다.
 func setup(coord: Vector2i) -> void:
@@ -22,7 +22,7 @@ func setup(coord: Vector2i) -> void:
 	_scatter_decorations(rng)
 
 func _fill_ground(rng: RandomNumberGenerator) -> void:
-	var tile_count := TilePlaceholderFactory.GROUND_COLORS.size()
+	var tile_count := GroundTileSetLoader.TILE_COUNT
 	for x in WorldGenConstants.CHUNK_TILES:
 		for y in WorldGenConstants.CHUNK_TILES:
 			var tile_index := rng.randi_range(0, tile_count - 1)
