@@ -55,6 +55,42 @@ func evolve_skill(base_id: StringName, evolution_data: SkillData) -> void:
 		instance.setup(evolution_data, owner_body)
 		_instances[evolution_data.id] = instance
 	RunState.skill_acquired.emit(evolution_data)
+	fuse_if_possible()  ## 이번 진화로 어떤 레시피의 재료가 방금 채워졌을 수 있음 — 트리거 아이템을 먼저 갖고 있던 경우 대비
+
+## 합체 트리거 아이템을 새로 얻거나 재료 스킬이 진화를 마칠 때마다 호출됩니다.
+## 조건(재료 전부 진화 완료 + 트리거 아이템 보유)을 만족하는 레시피가 있으면 즉시 발동합니다
+## (기획서 4.5 "재료가 전부 진화를 마친 상태에서 트리거 아이템을 보유하면 즉시 합체").
+func fuse_if_possible() -> void:
+	for recipe in FusionDatabase.all_recipes:
+		if _can_fuse(recipe):
+			_perform_fusion(recipe)
+			return  # 한 번의 호출에 레시피 하나만 발동 — 여러 레시피가 동시에 조건을 만족해도 순서대로 처리됨
+
+func _can_fuse(recipe: FusionRecipe) -> bool:
+	if RunState.fusion_trigger_count < 1:
+		return false
+	for ingredient in recipe.ingredients:
+		if RunState.skill_level(ingredient.id) < ingredient.max_level:
+			return false
+	return true
+
+## 재료 스킬들을 슬롯에서 제거하고(액티브 슬롯 반환), 트리거 아이템을 소모한 뒤
+## 합체 결과 스킬을 곧바로 만렙 상태로 장착합니다 (evolve_skill()과 동일한 패턴).
+func _perform_fusion(recipe: FusionRecipe) -> void:
+	for ingredient in recipe.ingredients:
+		remove_skill(ingredient.id)
+	RunState.add_fusion_trigger(-1)
+
+	var result := recipe.result
+	RunState.skill_levels[result.id] = result.max_level
+	RunState.owned_skills.append(result)
+	if result.logic_scene != null:
+		var instance: SkillInstanceBase = result.logic_scene.instantiate()
+		add_child(instance)
+		instance.setup(result, owner_body)
+		_instances[result.id] = instance
+	RunState.skill_acquired.emit(result)
+	RunState.fusion_completed.emit(result)
 
 ## 개발자 메뉴 전용 — 보유 스킬을 레벨과 무관하게 완전히 제거합니다 (인스턴스 노드도 함께 정리).
 ## scripts/debug/dev_menu.gd와 함께 지우면 됩니다.

@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/entities/pickups/XPGemSmall.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/entities/pickups/GoldCoin.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/entities/pickups/XPGemMedium.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/entities/pickups/FusionTrigger.tscn" id="6"]
 
 [sub_resource type="Resource" id="LootEntry_xp_small"]
 script = ExtResource("2")
@@ -22,6 +23,11 @@ drop_chance = 0.8
 min_count = 2
 max_count = 4
 
+[sub_resource type="Resource" id="LootEntry_fusion_trigger"]
+script = ExtResource("2")
+item_scene = ExtResource("6")
+drop_chance = 1.0
+
 [resource]
 script = ExtResource("1")
-entries = Array[ExtResource("2")]([SubResource("LootEntry_xp_small"), SubResource("LootEntry_xp_medium"), SubResource("LootEntry_gold")])
+entries = Array[ExtResource("2")]([SubResource("LootEntry_xp_small"), SubResource("LootEntry_xp_medium"), SubResource("LootEntry_gold"), SubResource("LootEntry_fusion_trigger")])

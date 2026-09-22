@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FusionRecipe" format=3]
+
+[ext_resource type="Script" path="res://resource_types/fusion_recipe.gd" id="1"]
+[ext_resource type="Script" path="res://resource_types/skill_data.gd" id="2"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/egg_bomb_evo_big.tres" id="3"]
+[ext_resource type="Resource" path="res://data/skill_evolutions/venom_spit_evo_toxic_field.tres" id="4"]
+[ext_resource type="Resource" path="res://data/fusion_results/white_phosphorus_egg.tres" id="5"]
+
+[resource]
+script = ExtResource("1")
+id = &"white_phosphorus_egg"
+ingredients = Array[ExtResource("2")]([ExtResource("3"), ExtResource("4")])
+require_all_evolved = true
+result = ExtResource("5")

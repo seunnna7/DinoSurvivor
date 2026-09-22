@@ -9,8 +9,13 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/SurvivalTimerHUD.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/ui/EvolutionChoiceUI.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PauseMenuUI.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/ui/FusionToastUI.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/ui/FusionFlashUI.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://scenes/ui/FusionTriggerHUD.tscn" id="12"]
 
 [node name="GameUI" type="CanvasLayer"]
+
+[node name="FusionFlashUI" parent="." instance=ExtResource("11")]
 
 [node name="SkillHUD" parent="." instance=ExtResource("1")]
 
@@ -24,8 +29,12 @@
 
 [node name="GoldHUD" parent="." instance=ExtResource("5")]
 
+[node name="FusionTriggerHUD" parent="." instance=ExtResource("12")]
+
 [node name="LevelHUD" parent="." instance=ExtResource("6")]
 
 [node name="SurvivalTimerHUD" parent="." instance=ExtResource("7")]
 
 [node name="PauseMenuUI" parent="." instance=ExtResource("9")]
+
+[node name="FusionToastUI" parent="." instance=ExtResource("10")]

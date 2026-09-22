@@ -22,6 +22,7 @@ config/features=PackedStringArray("4.7")
 
 RunState="*res://autoload/run_state.gd"
 SkillDatabase="*res://autoload/skill_database.gd"
+FusionDatabase="*res://autoload/fusion_database.gd"
 SpeciesDatabase="*res://autoload/species_database.gd"
 WaveManager="*res://autoload/wave_manager.gd"
 MetaProgress="*res://autoload/meta_progress.gd"

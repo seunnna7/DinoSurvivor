@@ -10,6 +10,8 @@ signal skill_removed(id: StringName)                        ## 진화로 베이�
 signal evolution_ready(base_data: SkillData)                ## 스킬이 만렙+진화 옵션 보유 상태가 됐을 때 — EvolutionChoiceUI가 선택 팝업을 띄움
 signal gold_changed(new_total: int)                         ## 골드 HUD가 이 신호를 받아 숫자를 갱신
 signal experience_changed(current: int, needed: int)        ## 레벨/경험치 HUD가 이 신호를 받아 게이지 바를 갱신
+signal fusion_completed(result_data: SkillData)             ## 합체가 발동했을 때 — FusionToastUI가 이 신호를 받아 알림을 띄움
+signal fusion_trigger_count_changed(new_count: int)         ## 합체 트리거 아이템 보유 개수가 바뀔 때 — FusionTriggerHUD가 이 신호를 받아 표시를 갱신
 
 const ACTIVE_SLOT_COUNT := 6  ## 액티브 스킬 슬롯 수 (기획서 3.2). 패시브 스킬은 슬롯을 차지하지 않음
 
@@ -34,6 +36,7 @@ var gold: int = 0
 
 var owned_skills: Array[SkillData] = []  ## HUD 표시 순서 (획득한 순서)
 var skill_levels: Dictionary = {}         ## StringName(스킬 id) -> int(레벨)
+var fusion_trigger_count: int = 0  ## 정예 몹이 드랍하는 합체 트리거 아이템 보유 개수 (레시피 공용, 기획서 4.5)
 
 var is_game_over: bool = false  ## true인 동안 레벨업 카드 팝업 등 다른 일시정지 UI가 뜨지 않도록 막는 용도
 var has_pending_evolution: bool = false  ## 진화 선택 UI가 떠 있는 동안 true — 레벨업 카드가 뒤이어 일시정지를 풀지 않도록 막는 가드
@@ -46,6 +49,7 @@ func reset_run() -> void:
 	gold = 0
 	owned_skills.clear()
 	skill_levels.clear()
+	fusion_trigger_count = 0
 	is_game_over = false
 	has_pending_evolution = false
 
@@ -79,6 +83,11 @@ func add_gold(amount: int) -> void:
 		return
 	gold += amount
 	gold_changed.emit(gold)
+
+## 합체 트리거 아이템 개수를 amount만큼 바꾸고(양수=획득, 음수=소모) HUD가 갱신되도록 신호를 보냅니다.
+func add_fusion_trigger(amount: int) -> void:
+	fusion_trigger_count += amount
+	fusion_trigger_count_changed.emit(fusion_trigger_count)
 
 func is_skill_owned(id: StringName) -> bool:
 	return skill_levels.has(id)

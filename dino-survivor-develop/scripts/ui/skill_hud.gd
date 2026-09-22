@@ -10,6 +10,7 @@ func _ready() -> void:
 	RunState.skill_acquired.connect(_on_skill_acquired)
 	RunState.skill_leveled_up.connect(_on_skill_leveled_up)
 	RunState.skill_removed.connect(_on_skill_removed)
+	RunState.fusion_completed.connect(_on_fusion_completed)
 	for data in RunState.owned_skills:
 		_add_slot(data)
 
@@ -34,3 +35,9 @@ func _on_skill_removed(id: StringName) -> void:
 	if _slots.has(id):
 		_slots[id].queue_free()
 		_slots.erase(id)
+
+## 합체 결과 스킬은 이미 _on_skill_acquired()로 슬롯이 생긴 뒤 이 신호가 뒤이어 오므로,
+## 여기서는 "방금 생긴 그 슬롯"을 찾아 반짝이게 하는 것만 담당.
+func _on_fusion_completed(result_data: SkillData) -> void:
+	if _slots.has(result_data.id):
+		_slots[result_data.id].flash()

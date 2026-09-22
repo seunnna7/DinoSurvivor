@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="WhitePhosphorusEggData" format=3]
+
+[ext_resource type="Script" path="res://resource_types/white_phosphorus_egg_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/WhitePhosphorusEggSkill.tscn" id="3"]
+
+[resource]
+script = ExtResource("2")
+id = &"white_phosphorus_egg"
+display_name = "백린란"
+species_motif = "오비랍토르 & 딜로포사우루스"
+flavor_text = "특란급 알이 착탄과 동시에 (데미지_숫자)의 폭발 피해를 주고, 그 자리에 남은 백린 화염이 한동안 적을 계속 불태웁니다."
+tags = Array[StringName]([&"lob", &"area", &"debuff"])
+base_damage = 34.0
+cooldown = 6.5
+max_level = 1
+knockback_distance = 0.3
+logic_scene = ExtResource("3")
+level_damage = Array[float]([1.0])
+throw_range = 260.0
+min_flight_time = 0.4
+max_flight_time = 0.75
+aoe_radius = 140.0
+zone_radius = 100.0
+zone_duration = 5.0
+tick_interval = 0.5
+zone_damage_ratio = 0.35
+icon_color = Color(0.85, 0.95, 0.6, 1)
